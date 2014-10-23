@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<!--
+    <color name="darkgreen">#3C5A4B</color>
+    <color name="lightgreen">#5A8773</color>
+-->
+    <color name="darkgrey">#ff0f0f0f</color>
+    <color name="grey">#424242</color>
+    <color name="lightgrey">#cccccc</color>
+
+    <color name="darkgreen">#64692D</color>
+    <color name="lightgreen">#A0AF37</color>
+
+    <color name="darkblue">#375A73</color>
+    <color name="lightblue">#5F9BBE</color>
+
+    <color name="darkred">#D73732</color>
+    <color name="lightred">#E68232</color>
+
+</resources>

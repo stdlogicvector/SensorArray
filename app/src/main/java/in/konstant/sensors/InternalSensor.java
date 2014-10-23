@@ -4,9 +4,16 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
+import java.util.ArrayList;
+
 public class InternalSensor extends Sensor implements SensorEventListener {
     private android.hardware.Sensor mSensor;
     private SensorManager mSensorManager;
+
+    private float[] lastValues;
+    private float timestamp;
+
+    private int[] offsets;
 
     public InternalSensor(SensorManager manager, android.hardware.Sensor sensor) {
         super();
@@ -22,7 +29,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
     }
 
     public String getPart() {
-        return mSensor.getVendor() + ' ' + mSensor.getVersion();
+        return mSensor.getVendor();
     }
 
     public Measurement getMeasurement(int id) {
@@ -38,13 +45,23 @@ public class InternalSensor extends Sensor implements SensorEventListener {
     }
 
     public float[] getValue(int id) {
-        float[] result = new float[1];
+        if (id >= 0 && id < mMeasurements.size()) {
+            int size = mMeasurements.get(id).getSize();
+            float[] result = new float[size];
 
-        return result;
+            for (int v = offsets[id]; v < offsets[id] + size; ++v) {
+                result[v] = lastValues[v];
+            }
+
+            return result;
+        } else {
+            return null;
+        }
     }
 
     public void onSensorChanged(SensorEvent event) {
-
+        lastValues = event.values;
+        timestamp = event.timestamp;
     }
 
     public void onAccuracyChanged(android.hardware.Sensor sensor, int accuracy) {
@@ -57,6 +74,12 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
         switch (mSensor.getType()) {
             case android.hardware.Sensor.TYPE_GYROSCOPE_UNCALIBRATED:
+
+                type = TYPE.ROTATION;
+
+                offsets = new int[2];
+                offsets[0] = 0;
+                offsets[1] = 3;
 
                 subunits = new Subunit[2];
                 subunits[0] = new Subunit(BaseUnit.DEGREE, +1);
@@ -80,6 +103,12 @@ public class InternalSensor extends Sensor implements SensorEventListener {
             break;
 
             case android.hardware.Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED:
+
+                type = TYPE.MAGNETIC;
+
+                offsets = new int[2];
+                offsets[0] = 0;
+                offsets[1] = 3;
 
                 subunits = new Subunit[3];
                 subunits[0] = new Subunit(BaseUnit.KILOGRAM, +1);
@@ -106,6 +135,11 @@ public class InternalSensor extends Sensor implements SensorEventListener {
             case android.hardware.Sensor.TYPE_GRAVITY:
             case android.hardware.Sensor.TYPE_ACCELEROMETER:
 
+                type = TYPE.SPATIAL;
+
+                offsets = new int[1];
+                offsets[0] = 0;
+
                 subunits = new Subunit[2];
                 subunits[0] = new Subunit(BaseUnit.METER, +1);
                 subunits[1] = new Subunit(BaseUnit.SECOND, -2);
@@ -120,6 +154,11 @@ public class InternalSensor extends Sensor implements SensorEventListener {
             break;
 
             case android.hardware.Sensor.TYPE_MAGNETIC_FIELD:
+
+                type = TYPE.MAGNETIC;
+
+                offsets = new int[1];
+                offsets[0] = 0;
 
                 subunits = new Subunit[3];
                 subunits[0] = new Subunit(BaseUnit.KILOGRAM, +1);
@@ -137,6 +176,11 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_GYROSCOPE:
 
+                type = TYPE.ROTATION;
+
+                offsets = new int[1];
+                offsets[0] = 0;
+
                 subunits = new Subunit[2];
                 subunits[0] = new Subunit(BaseUnit.DEGREE, +1);
                 subunits[1] = new Subunit(BaseUnit.SECOND, -1);
@@ -151,6 +195,11 @@ public class InternalSensor extends Sensor implements SensorEventListener {
             break;
 
             case android.hardware.Sensor.TYPE_LIGHT:
+
+                type = TYPE.LIGHT;
+
+                offsets = new int[1];
+                offsets[0] = 0;
 
                 subunits = new Subunit[2];
                 subunits[0] = new Subunit(BaseUnit.CANDELA, +1);
@@ -167,6 +216,11 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_AMBIENT_TEMPERATURE:
 
+                type = TYPE.TEMPERATURE;
+
+                offsets = new int[1];
+                offsets[0] = 0;
+
                 subunits = new Subunit[1];
                 subunits[0] = new Subunit(BaseUnit.KELVIN, +1);
 
@@ -181,6 +235,11 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_PROXIMITY:
 
+                type = TYPE.DISTANCE;
+
+                offsets = new int[1];
+                offsets[0] = 0;
+
                 subunits = new Subunit[1];
                 subunits[0] = new Subunit(BaseUnit.METER, +1);
 
@@ -194,6 +253,12 @@ public class InternalSensor extends Sensor implements SensorEventListener {
                 break;
 
             case android.hardware.Sensor.TYPE_PRESSURE:
+
+                type = TYPE.PRESSURE;
+
+                offsets = new int[1];
+                offsets[0] = 0;
+
                 subunits = new Subunit[3];
                 subunits[0] = new Subunit(BaseUnit.KILOGRAM, +1);
                 subunits[1] = new Subunit(BaseUnit.METER, -1);

@@ -18,10 +18,33 @@ public enum Prefix {
     @Override
     public String toString() {
         switch (this) {
+            default:
             case NO_PREFIX:
                 return "";
-            default:
-                return this.name();
+            case PICO:
+                return "pico";
+            case NANO:
+                return "nano";
+            case MICRO:
+                return "micro";
+            case MILLI:
+                return "milli";
+            case CENTI:
+                return "centi";
+            case DECI:
+                return "deci";
+            case DECA:
+                return "deca";
+            case HECTO:
+                return "hecto";
+            case KILO:
+                return "kilo";
+            case MEGA:
+                return "mega";
+            case GIGA:
+                return "giga";
+            case TERA:
+                return "tera";
         }
     }
 

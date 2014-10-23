@@ -3,10 +3,27 @@ package in.konstant.sensors;
 import java.util.ArrayList;
 
 public abstract class Sensor {
+
+    public static enum TYPE {
+        SPATIAL,
+        ROTATION,
+        DISTANCE,
+        COLOR,
+        LIGHT,
+        HUMIDITY,
+        MAGNETIC,
+        PRESSURE,
+        TEMPERATURE,
+        AUDIO,
+        GENERIC
+    }
+
+    TYPE type;
     ArrayList<Measurement> mMeasurements;
 
     public Sensor() {
-
+        mMeasurements = new ArrayList<Measurement>();
+        type = TYPE.GENERIC;
     }
 
     abstract String getName();
@@ -14,6 +31,10 @@ public abstract class Sensor {
 
     public int getNumberOfMeasurements() {
         return mMeasurements.size();
+    }
+
+    public TYPE getType() {
+        return this.type;
     }
 
     abstract void activate();

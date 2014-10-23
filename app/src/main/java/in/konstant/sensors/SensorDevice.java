@@ -16,6 +16,7 @@ public abstract class SensorDevice {
 
     public SensorDevice(String address) {
         this.mAddress = address;
+        mSensors = new ArrayList<Sensor>();
     }
 
     abstract boolean initialize();

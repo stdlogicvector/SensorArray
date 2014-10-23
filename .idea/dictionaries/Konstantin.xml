@@ -2,8 +2,15 @@
   <dictionary name="Konstantin">
     <words>
       <w>candela</w>
+      <w>centi</w>
+      <w>deca</w>
+      <w>deci</w>
+      <w>giga</w>
+      <w>hecto</w>
       <w>illuminance</w>
       <w>konstant</w>
+      <w>nano</w>
+      <w>pico</w>
       <w>sensorarray</w>
     </words>
   </dictionary>

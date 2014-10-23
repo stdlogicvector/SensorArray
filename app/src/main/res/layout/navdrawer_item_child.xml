@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:rowCount="2"
+    android:columnCount="3"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp"
+    android:background="@drawable/nav_selector">
+
+    <ImageView
+        android:id="@+id/icSensorIcon"
+        android:src="@drawable/ic_rotation"
+        android:layout_width="40dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_rowSpan="2"
+        android:layout_row="0"
+        android:layout_column="0"
+        android:layout_marginStart="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginRight="2dp"
+        android:contentDescription="@string/desc_list_item_icon"
+        />
+
+    <TextView
+        android:id="@+id/tvSensorName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_row="0"
+        android:layout_column="1"
+        android:textSize="15dp"
+        android:textColor="#ffffff"
+        android:gravity="center_vertical"
+        android:text="Sensorname"/>
+
+    <TextView
+        android:id="@+id/tvSensorPart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_row="1"
+        android:layout_column="1"
+        android:textSize="12dp"
+        android:textColor="#ffffff"
+        android:typeface="monospace"
+        android:text="Part"/>
+
+    <TextView
+        android:id="@+id/tvSensorMeasurements"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_row="0"
+        android:layout_rowSpan="2"
+        android:layout_column="2"
+        android:layout_gravity="center_vertical|right"
+        android:textAlignment="center"
+        android:background="@drawable/counter_child"
+        android:textColor="#ffffff"
+        android:text="1"
+        android:minWidth="25dp" />
+
+</GridLayout>

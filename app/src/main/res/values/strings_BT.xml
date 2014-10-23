@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- BTDeviceList -->
+    <string name="activity_devicelist">Bluetooth Devices</string>
+    <string name="title_activity_btdevicelist">Bluetooth Devices</string>
+    <string name="title_paired_devices">Paired Devices</string>
+    <string name="title_new_devices">New Devices</string>
+    <string name="text_no_paired_devices">No paired Devices.</string>
+    <string name="text_no_new_devices">No Devices found.</string>
+    <string name="text_scanning">Scanning…</string>
+    <string name="text_select_device">Select Device</string>
+    <string name="button_scan">Start Scan</string>
+    <string name="button_stop">Stop Scan</string>
+    <string name="toast_not_available">Bluetooth not available</string>
+    <string name="title_activity_sensor_device">SensorDevice</string>
+
+</resources>

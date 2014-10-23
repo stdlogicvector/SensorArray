@@ -1,0 +1,10 @@
+    <ExpandableListView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/lvDeviceList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:choiceMode="singleChoice"
+        android:divider="@color/darkblue"
+        android:dividerHeight="1dp"
+        android:background="@color/darkgrey"
+        tools:context=".NavigationDrawerFragment" />

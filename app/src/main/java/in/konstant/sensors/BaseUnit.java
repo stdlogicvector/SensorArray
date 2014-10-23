@@ -31,6 +31,8 @@ public enum BaseUnit {
                 return "mole";
             case CANDELA:
                 return "candela";
+            case DEGREE:
+                return "degree";
         }
     }
 
@@ -53,6 +55,8 @@ public enum BaseUnit {
                 return "amount of substance";
             case CANDELA:
                 return "luminous intensity";
+            case DEGREE:
+                return "angle";
         }
     }
 

@@ -2,13 +2,18 @@ package in.konstant.sensors;
 
 import android.app.Activity;
 import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
+
+import in.konstant.R;
 
 public class SensorArray extends BaseExpandableListAdapter {
     private static final String TAG = "SensorArray";
@@ -19,21 +24,39 @@ public class SensorArray extends BaseExpandableListAdapter {
 
     private static SensorArray instance;
 
-    private final Activity activity;
+    static class DeviceViewHolder {
+        public ImageView icSensorDeviceIcon;
+        public TextView tvSensorDeviceName;
+        public TextView tvSensorDeviceAddress;
+        public TextView tvSensorDeviceSensors;
+    }
+
+    static class SensorViewHolder {
+        public ImageView icSensorIcon;
+        public TextView tvSensorName;
+        public TextView tvSensorPart;
+        public TextView tvSensorMeasurements;
+    }
+
+    private final Context context;
 
     private ArrayList<String> ids;
     private HashMap<String, SensorDevice> devices;
 
-    private SensorArray(Activity activity) {
+    private SensorArray(Context context) {
         devices = new HashMap<String, SensorDevice>();
         ids = new ArrayList<String>();
 
-        this.activity = activity;
+        // Add internal SensorDevice
+        addDevice(new InternalSensorDevice(context));
+        getDevice(0).initialize();
+
+        this.context = context;
     }
 
-    private static SensorArray getInstance(Activity activity) {
+    public static SensorArray getInstance(Context context) {
         if (instance == null) {
-            instance = new SensorArray(activity);
+            instance = new SensorArray(context);
         }
         return instance;
     }
@@ -122,6 +145,32 @@ public class SensorArray extends BaseExpandableListAdapter {
                              boolean isExpanded,
                              View convertView,
                              ViewGroup parent) {
+        if (convertView == null) {
+            LayoutInflater inflater = ((Activity) context).getLayoutInflater();
+            convertView = inflater.inflate(R.layout.navdrawer_item_group, null);
+
+            DeviceViewHolder deviceViewHolder = new DeviceViewHolder();
+            deviceViewHolder.icSensorDeviceIcon = (ImageView) convertView.findViewById(R.id.icSensorDeviceIcon);
+            deviceViewHolder.tvSensorDeviceName = (TextView) convertView.findViewById(R.id.tvSensorDeviceName);
+            deviceViewHolder.tvSensorDeviceAddress = (TextView) convertView.findViewById(R.id.tvSensorDeviceAddress);
+            deviceViewHolder.tvSensorDeviceSensors = (TextView) convertView.findViewById(R.id.tvSensorDeviceSensors);
+
+            convertView.setTag(deviceViewHolder);
+        }
+
+        DeviceViewHolder holder = (DeviceViewHolder) convertView.getTag();
+        SensorDevice item = getGroup(id);
+
+        holder.tvSensorDeviceName.setText(item.getDeviceName());
+        holder.tvSensorDeviceAddress.setText(item.getBluetoothAddress());
+
+        if (item.isConnected()) {
+            holder.icSensorDeviceIcon.setImageResource(R.drawable.ic_device_connected);
+            holder.tvSensorDeviceSensors.setText("" + item.getNumberOfSensors());
+        } else {
+            holder.icSensorDeviceIcon.setImageResource(R.drawable.ic_device_disconnected);
+            holder.tvSensorDeviceSensors.setVisibility(View.GONE);
+        }
 
         return convertView;
     }
@@ -132,6 +181,44 @@ public class SensorArray extends BaseExpandableListAdapter {
                              boolean isLastChild,
                              View convertView,
                              ViewGroup parent) {
+
+        if (convertView == null) {
+            LayoutInflater inflater = ((Activity) context).getLayoutInflater();
+            convertView = inflater.inflate(R.layout.navdrawer_item_child, null);
+
+            SensorViewHolder sensorViewHolder = new SensorViewHolder();
+            sensorViewHolder.icSensorIcon = (ImageView) convertView.findViewById(R.id.icSensorIcon);
+            sensorViewHolder.tvSensorName = (TextView) convertView.findViewById(R.id.tvSensorName);
+            sensorViewHolder.tvSensorPart = (TextView) convertView.findViewById(R.id.tvSensorPart);
+            sensorViewHolder.tvSensorMeasurements = (TextView) convertView.findViewById(R.id.tvSensorMeasurements);
+
+            convertView.setTag(sensorViewHolder);
+        }
+
+        SensorViewHolder holder = (SensorViewHolder) convertView.getTag();
+        Sensor item = getGroup(id).getSensor(childId);
+
+        holder.tvSensorName.setText(item.getName());
+        holder.tvSensorPart.setText(item.getPart());
+        holder.tvSensorMeasurements.setText("" + item.getNumberOfMeasurements());
+
+        int imageResource;
+
+        switch (item.getType()) {
+            default: imageResource = R.drawable.ic_generic; break;
+            case AUDIO : imageResource = R.drawable.ic_audio; break;
+            case TEMPERATURE: imageResource = R.drawable.ic_temperature; break;
+            case LIGHT: imageResource = R.drawable.ic_light; break;
+            case MAGNETIC: imageResource = R.drawable.ic_magnetic; break;
+            case SPATIAL: imageResource = R.drawable.ic_spatial; break;
+            case ROTATION: imageResource = R.drawable.ic_rotation; break;
+            case DISTANCE: imageResource = R.drawable.ic_distance; break;
+            case HUMIDITY: imageResource = R.drawable.ic_humidity; break;
+            case PRESSURE: imageResource = R.drawable.ic_pressure; break;
+            case COLOR: imageResource = R.drawable.ic_color; break;
+        }
+
+        holder.icSensorIcon.setImageResource(imageResource);
 
         return convertView;
     }
