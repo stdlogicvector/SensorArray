@@ -26,7 +26,10 @@ public class InternalSensorDevice extends SensorDevice {
         List<Sensor> internalSensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
 
         for (Sensor internalSensor : internalSensors) {
-            mSensors.add(new InternalSensor(mSensorManager, internalSensor));
+            if (internalSensor.getType() != Sensor.TYPE_ORIENTATION &&
+                internalSensor.getType() != Sensor.TYPE_ROTATION_VECTOR) {
+                mSensors.add(new InternalSensor(mSensorManager, internalSensor));
+            }
         }
 
         return true;

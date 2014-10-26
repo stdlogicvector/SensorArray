@@ -206,16 +206,22 @@ public class SensorArray extends BaseExpandableListAdapter {
 
         switch (item.getType()) {
             default: imageResource = R.drawable.ic_generic; break;
+            case ADC: imageResource = R.drawable.ic_adc; break;
             case AUDIO : imageResource = R.drawable.ic_audio; break;
-            case TEMPERATURE: imageResource = R.drawable.ic_temperature; break;
+            case COMPASS: imageResource = R.drawable.ic_compass; break;
+            case COLOR: imageResource = R.drawable.ic_color; break;
+            case DISTANCE: imageResource = R.drawable.ic_distance; break;
+            case GAS: imageResource = R.drawable.ic_gas; break;
+            case HUMIDITY: imageResource = R.drawable.ic_humidity; break;
             case LIGHT: imageResource = R.drawable.ic_light; break;
             case MAGNETIC: imageResource = R.drawable.ic_magnetic; break;
-            case SPATIAL: imageResource = R.drawable.ic_spatial; break;
-            case ROTATION: imageResource = R.drawable.ic_rotation; break;
-            case DISTANCE: imageResource = R.drawable.ic_distance; break;
-            case HUMIDITY: imageResource = R.drawable.ic_humidity; break;
+            case POLARISATION: imageResource = R.drawable.ic_polarisation; break;
             case PRESSURE: imageResource = R.drawable.ic_pressure; break;
-            case COLOR: imageResource = R.drawable.ic_color; break;
+            case RADIATION: imageResource = R.drawable.ic_radiation; break;
+            case ROTATION: imageResource = R.drawable.ic_rotation; break;
+            case SPATIAL: imageResource = R.drawable.ic_spatial; break;
+            case TEMPERATURE: imageResource = R.drawable.ic_temperature; break;
+            case THERMAL: imageResource = R.drawable.ic_infrared; break;
         }
 
         holder.icSensorIcon.setImageResource(imageResource);

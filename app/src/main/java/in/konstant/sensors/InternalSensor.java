@@ -33,7 +33,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
     }
 
     public Measurement getMeasurement(int id) {
-        return null;
+        return mMeasurements.get(id);
     }
 
     public void activate() {
@@ -132,6 +132,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
                 );
             break;
 
+            case android.hardware.Sensor.TYPE_LINEAR_ACCELERATION:
             case android.hardware.Sensor.TYPE_GRAVITY:
             case android.hardware.Sensor.TYPE_ACCELEROMETER:
 

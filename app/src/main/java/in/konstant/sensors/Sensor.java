@@ -5,17 +5,23 @@ import java.util.ArrayList;
 public abstract class Sensor {
 
     public static enum TYPE {
-        SPATIAL,
-        ROTATION,
-        DISTANCE,
-        COLOR,
-        LIGHT,
-        HUMIDITY,
-        MAGNETIC,
-        PRESSURE,
-        TEMPERATURE,
+        GENERIC,
+        ADC,
         AUDIO,
-        GENERIC
+        COMPASS,
+        COLOR,
+        DISTANCE,
+        GAS,
+        HUMIDITY,
+        LIGHT,
+        MAGNETIC,
+        POLARISATION,
+        PRESSURE,
+        ROTATION,
+        RADIATION,
+        SPATIAL,
+        TEMPERATURE,
+        THERMAL
     }
 
     TYPE type;
@@ -26,8 +32,8 @@ public abstract class Sensor {
         type = TYPE.GENERIC;
     }
 
-    abstract String getName();
-    abstract String getPart();
+    public abstract String getName();
+    public abstract String getPart();
 
     public int getNumberOfMeasurements() {
         return mMeasurements.size();
@@ -37,8 +43,8 @@ public abstract class Sensor {
         return this.type;
     }
 
-    abstract void activate();
-    abstract void deactivate();
+    public abstract void activate();
+    public abstract void deactivate();
 
     void setRange(int measurement, int range) {
         if (measurement >= 0 && measurement < mMeasurements.size()) {

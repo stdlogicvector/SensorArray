@@ -2,8 +2,16 @@
 <resources>
     <string name="app_name">SensorArray</string>
 
+    <string name="toast_no_bt">No Bluetooth available!</string>
+
     <!-- Action Bar Menu -->
-    <string name="action_settings">Settings</string>
+        <!-- Main Activity -->
+        <string name="action_settings">Settings</string>
+        <string name="action_bluetooth">Bluetooth</string>
+
+        <!-- Drawer -->
+        <string name="action_addDevice">Add Device</string>
+
 
     <!-- Navigation Drawer -->
     <string name="navigation_drawer_open">Open main menu</string>

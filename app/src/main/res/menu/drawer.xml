@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/action_drawer_add"
+        android:title="@string/action_addDevice"
+        android:orderInCategory="100"
+        android:icon="@drawable/ai_add_device"
+        android:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_drawer_settings"
+        android:title="@string/action_settings"
+        android:orderInCategory="200"
+        android:showAsAction="never" />
+</menu>
