@@ -35,20 +35,14 @@ public class BTDeviceList extends Activity {
 
     // Member Variables
     private BluetoothAdapter mBluetoothAdapter;
-    private ArrayAdapter<String> mPairedDevicesArrayAdapter;
-    private ArrayAdapter<String> mNewDevicesArrayAdapter;
+//    private ArrayAdapter<String> mPairedDevicesArrayAdapter;
+//    private ArrayAdapter<String> mNewDevicesArrayAdapter;
+    private BTDeviceListAdapter mPairedDevicesArrayAdapter;
+    private BTDeviceListAdapter mNewDevicesArrayAdapter;
 
     public static void show(Context context) {
         Intent scanIntent = new Intent(context, BTDeviceList.class);
         ((Activity) context).startActivityForResult(scanIntent, REQ_DEVICE_LIST);
-    }
-
-    public static String getDeviceAddress(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQ_DEVICE_LIST && resultCode == Activity.RESULT_OK) {
-            return data.getExtras().getString(BTDeviceList.EXTRA_DEVICE_ADDRESS);
-        } else {
-            return null;
-        }
     }
 
     @Override
@@ -71,8 +65,8 @@ public class BTDeviceList extends Activity {
         });
 
         // Init ArrayAdapters & ListViews
-        mPairedDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.arrayadapter_btdevicelist);
-        mNewDevicesArrayAdapter = new ArrayAdapter<String>(this, R.layout.arrayadapter_btdevicelist);
+        mPairedDevicesArrayAdapter = new BTDeviceListAdapter(this);
+        mNewDevicesArrayAdapter = new BTDeviceListAdapter(this);
 
         ListView listPairedDevices = (ListView) findViewById(R.id.list_paired_devices);
         listPairedDevices.setAdapter(mPairedDevicesArrayAdapter);
@@ -112,15 +106,17 @@ public class BTDeviceList extends Activity {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             mBluetoothAdapter.cancelDiscovery();
 
-            // Get MAC-Address
-            String info = ((TextView) view).getText().toString();
-            String address = info.substring(info.length() - 17);
+            String name =  ((TextView) view.findViewById(R.id.tvBTDeviceName)).getText().toString();
+            String address = ((TextView) view.findViewById(R.id.tvBTDeviceAddress)).getText().toString();
 
-            Intent intent = new Intent();
-            intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
+            if (address.compareTo("") != 0 ) {
+                Intent intent = new Intent();
+                intent.putExtra(EXTRA_DEVICE_NAME, name);
+                intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
 
-            setResult(Activity.RESULT_OK, intent);
-            finish();
+                setResult(Activity.RESULT_OK, intent);
+                finish();
+            }
         }
     };
 
@@ -128,19 +124,20 @@ public class BTDeviceList extends Activity {
         public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
             mBluetoothAdapter.cancelDiscovery();
 
-            // Get MAC-Address
-            String info = ((TextView) view).getText().toString();
-            String address = info.substring(info.length() - 17);
+            String address = ((TextView) view.findViewById(R.id.tvBTDeviceAddress)).getText().toString();
 
-            BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+            if (address.compareTo("") != 0 ) {
+                BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 
-            if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
-                removeBond(device);
-            } else if (device.getBondState() == BluetoothDevice.BOND_NONE) {
-                createBond(device);
-            }
+                if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
+                    removeBond(device);
+                } else if (device.getBondState() == BluetoothDevice.BOND_NONE) {
+                    createBond(device);
+                }
 
-            return true;
+                return true;
+            } else
+                return false;
         }
     };
 
@@ -175,22 +172,19 @@ public class BTDeviceList extends Activity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
-                    String entry = device.getName() +
-                                   " (" + BTControl.getDeviceMajorClassName(device.getBluetoothClass().getMajorDeviceClass()) + ")" +
-                                   "\n" +
-                                   device.getAddress();
-
-                    if (mNewDevicesArrayAdapter.getPosition(entry) == -1)
-                        mNewDevicesArrayAdapter.add(entry);
+                    mNewDevicesArrayAdapter.add(
+                            device.getName(),
+                            "(" + BTControl.getDeviceMajorClassName(device.getBluetoothClass().getMajorDeviceClass()) + ")",
+                            device.getAddress());
                 }
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 setProgressBarIndeterminateVisibility(false);
-                setTitle(R.string.text_select_device);
+
                 ((Button)findViewById(R.id.button_scan)).setText(R.string.button_scan);
 
                 if (mNewDevicesArrayAdapter.getCount() == 0) {
                     String noDevices = getResources().getText(R.string.text_no_new_devices).toString();
-                    mNewDevicesArrayAdapter.add(noDevices);
+                    mNewDevicesArrayAdapter.add(noDevices, "", "");
                 }
             } else if (BluetoothDevice.ACTION_PAIRING_REQUEST.equals(action)) {
                 int pairingVariant = intent.getIntExtra(BluetoothDevice.EXTRA_PAIRING_VARIANT, -1);
@@ -224,11 +218,7 @@ public class BTDeviceList extends Activity {
 
                     Toast.makeText(getApplicationContext(), "Paired with " + device.getName(), Toast.LENGTH_SHORT).show();
 
-                    String entry = device.getName() +
-                            " (" + BTControl.getDeviceMajorClassName(device.getBluetoothClass().getMajorDeviceClass()) + ")" +
-                            "\n" + device.getAddress();
-
-                    mNewDevicesArrayAdapter.remove(entry);
+                    mNewDevicesArrayAdapter.remove(device.getAddress());
                 }
 
                 getPairedDevices();
@@ -247,13 +237,16 @@ public class BTDeviceList extends Activity {
         if (pairedDevices.size() > 0) {
             findViewById(R.id.title_paired_devices).setVisibility(View.VISIBLE);
             for (BluetoothDevice device : pairedDevices) {
-                mPairedDevicesArrayAdapter.add(device.getName() +
-                        " (" + BTControl.getDeviceMajorClassName(device.getBluetoothClass().getMajorDeviceClass()) + ")" +
-                        "\n" + device.getAddress());
+                mPairedDevicesArrayAdapter.add(
+                        device.getName(),
+                        "(" + BTControl.getDeviceMajorClassName(device.getBluetoothClass().getMajorDeviceClass()) + ")",
+                        device.getAddress());
             }
         } else {
-            String noDevices = getResources().getText(R.string.text_no_paired_devices).toString();
-            mPairedDevicesArrayAdapter.add(noDevices);
+            mPairedDevicesArrayAdapter.add(
+                    getResources().getText(R.string.text_no_paired_devices).toString(),
+                    "",
+                    "");
         }
     }
 
@@ -264,15 +257,15 @@ public class BTDeviceList extends Activity {
             mBluetoothAdapter.cancelDiscovery();
 
             setProgressBarIndeterminateVisibility(false);
-            setTitle(R.string.text_select_device);
+
             ((Button)findViewById(R.id.button_scan)).setText(R.string.button_scan);
 
         } else {
             setProgressBarIndeterminateVisibility(true);
-            setTitle(R.string.text_scanning);
+
             mNewDevicesArrayAdapter.clear();
 
-            findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
+            //findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
             ((Button)findViewById(R.id.button_scan)).setText(R.string.button_stop);
 
             mBluetoothAdapter.startDiscovery();

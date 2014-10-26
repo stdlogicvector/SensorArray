@@ -7,7 +7,7 @@
     android:paddingRight="0dp"
     android:paddingTop="0dp"
     android:paddingBottom="0dp"
-    tools:context="com.example.konstantin.BT.BTDeviceList">
+    tools:context="in.konstant.BT.BTDeviceList">
 
     <TextView
         android:id="@+id/title_paired_devices"
@@ -33,7 +33,6 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/title_new_devices"
-        android:visibility="gone"
         android:background="#666666"
         android:textColor="#FFFFFF"
         android:paddingLeft="5dp"

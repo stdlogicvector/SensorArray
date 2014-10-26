@@ -51,7 +51,7 @@ public class BTDevice {
     private final Context mContext;
     private Handler mHandler;
 
-   //    private final Object mBluetoothService;
+//    private final Object mBluetoothService;
 //    private final Class mBluetoothServiceClass;
     private final BluetoothAdapter mBluetoothAdapter;
     private final BluetoothDevice mBluetoothDevice;

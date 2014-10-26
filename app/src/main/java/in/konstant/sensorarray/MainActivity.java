@@ -3,13 +3,16 @@ package in.konstant.sensorarray;
 import android.app.Activity;
 
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,10 +22,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.widget.Toast;
 
 import in.konstant.BT.BTControl;
+import in.konstant.BT.BTDeviceList;
 import in.konstant.R;
+import in.konstant.sensors.SensorArray;
 
 public class MainActivity extends Activity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+                   SensorDeviceListDialog.SensorDeviceListDialogListener {
 
     MenuItem miBluetooth;
 
@@ -51,7 +57,13 @@ public class MainActivity extends Activity
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
     protected void onDestroy() {
+        SensorArray.getInstance(this).saveDevices();
         BTControl.unregisterStateChangeReceiver(this, BTStateChangeReceiver);
         super.onDestroy();
     }
@@ -65,12 +77,12 @@ public class MainActivity extends Activity
 
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(group, child))
+                .replace(R.id.container, SensorFragment.newInstance(group, child))
                 .commit();
     }
 
-    public void onSectionAttached(int device, int sensor) {
-        mTitle = "Device " + device + " Sensor " + sensor;
+    public void onFragmentCreated(String title) {
+        mTitle = title;
     }
 
     public void restoreActionBar() {
@@ -141,38 +153,62 @@ public class MainActivity extends Activity
         }
     }
 
-    public static class PlaceholderFragment extends Fragment {
-        // The fragment argument representing the section number for this fragment.
-        private static final String ARG_DEVICE_NUMBER = "device_number";
-        private static final String ARG_SENSOR_NUMBER = "sensor_number";
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == BTDeviceList.REQ_DEVICE_LIST && resultCode == Activity.RESULT_OK) {
+            String address = data.getExtras().getString(BTDeviceList.EXTRA_DEVICE_ADDRESS);
+            String name = data.getExtras().getString(BTDeviceList.EXTRA_DEVICE_NAME);
 
-        // Returns a new instance of this fragment for the given section number.
-        public static PlaceholderFragment newInstance(int deviceNumber, int sensorNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_DEVICE_NUMBER, deviceNumber);
-            args.putInt(ARG_SENSOR_NUMBER, sensorNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
+            SensorArray sensorArray = SensorArray.getInstance(this);
 
-        public PlaceholderFragment() {
+            if (address != null) {
+                if (sensorArray.containsDevice(address)) {
+                    Toast.makeText(this, R.string.toast_device_already_on_list, Toast.LENGTH_SHORT).show();
+                } else {
+                    sensorArray.addDevice(address, name);
+                }
+            }
         }
+    }
 
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_sensor, container, false);
-            return rootView;
-        }
+    @Override
+    public void onSensorDeviceListDialogConnect(int id, boolean connected) {
+        SensorArray sensorArray = SensorArray.getInstance(this);
 
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_DEVICE_NUMBER),
-                    getArguments().getInt(ARG_SENSOR_NUMBER));
+        if (connected) {
+            sensorArray.getGroup(id).disconnect();
+        } else {
+            if (BTControl.enabled()) {
+                sensorArray.getGroup(id).connect();
+            }
         }
+    }
+
+    @Override
+    public void onSensorDeviceListDialogSettings(int id) {
+
+    }
+
+    @Override
+    public void onSensorDeviceListDialogDelete(int id) {
+        final int deviceId = id; // For Access from inner Class
+        final SensorArray sensorArray = SensorArray.getInstance(this);
+
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle(R.string.dialog_delete_title)
+                .setMessage(getResources().getString(
+                        R.string.dialog_delete_message,
+                        sensorArray.getGroup(id).getDeviceName()))
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        sensorArray.getGroup(deviceId).quit();
+                        sensorArray.removeDevice(deviceId);
+                    }
+                })
+                .setNegativeButton("No", null)
+                .show();
     }
 
 }

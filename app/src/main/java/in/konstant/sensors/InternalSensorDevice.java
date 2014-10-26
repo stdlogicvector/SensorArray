@@ -45,6 +45,11 @@ public class InternalSensorDevice extends SensorDevice {
         }
     }
 
+    public boolean quit() {
+        disconnect();
+        return true;
+    }
+
     public int getConnectionState() {
         if (mSensorManager != null) {
             return STATE.CONNECTED;

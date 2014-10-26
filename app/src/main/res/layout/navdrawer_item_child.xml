@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="@dimen/navigation_drawer_width"
     android:layout_height="wrap_content"
     android:rowCount="2"
     android:columnCount="3"
@@ -20,6 +20,7 @@
         android:layout_column="0"
         android:layout_marginStart="0dp"
         android:layout_marginLeft="0dp"
+        android:layout_marginEnd="2dp"
         android:layout_marginRight="2dp"
         android:contentDescription="@string/desc_list_item_icon"
         />
@@ -30,20 +31,25 @@
         android:layout_height="wrap_content"
         android:layout_row="0"
         android:layout_column="1"
-        android:textSize="15dp"
+        android:textSize="15sp"
         android:textColor="#ffffff"
-        android:gravity="center_vertical"
+        android:gravity="center_vertical|start"
+        android:ellipsize="end"
+        android:singleLine="true"
         android:text="Sensorname"/>
 
     <TextView
         android:id="@+id/tvSensorPart"
-        android:layout_width="wrap_content"
+        android:layout_width="175dp"
         android:layout_height="wrap_content"
         android:layout_row="1"
         android:layout_column="1"
-        android:textSize="12dp"
+        android:textSize="12sp"
         android:textColor="#ffffff"
         android:typeface="monospace"
+        android:ellipsize="end"
+        android:gravity="center_vertical|start"
+        android:singleLine="true"
         android:text="Part"/>
 
     <TextView
@@ -53,7 +59,9 @@
         android:layout_row="0"
         android:layout_rowSpan="2"
         android:layout_column="2"
-        android:layout_gravity="center_vertical|right"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_gravity="center_vertical|end"
         android:textAlignment="center"
         android:background="@drawable/counter_child"
         android:textColor="#ffffff"

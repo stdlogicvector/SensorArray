@@ -3,6 +3,7 @@
     <string name="app_name">SensorArray</string>
 
     <string name="toast_no_bt">No Bluetooth available!</string>
+    <string name="toast_device_already_on_list">Device already on list</string>
 
     <!-- Action Bar Menu -->
         <!-- Main Activity -->

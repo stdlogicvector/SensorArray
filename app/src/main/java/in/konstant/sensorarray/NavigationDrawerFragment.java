@@ -3,7 +3,10 @@ package in.konstant.sensorarray;
 
 import android.app.Activity;
 import android.app.ActionBar;
+import android.app.AlertDialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -11,7 +14,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,11 +22,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
-import android.widget.Toast;
 
+import in.konstant.BT.BTControl;
+import in.konstant.BT.BTDeviceList;
 import in.konstant.R;
 import in.konstant.sensors.SensorArray;
-import in.konstant.sensors.SensorDevice;
 
 public class NavigationDrawerFragment extends Fragment {
     private static final String TAG = "NavDrawer";
@@ -62,16 +64,15 @@ public class NavigationDrawerFragment extends Fragment {
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
 
         if (savedInstanceState != null) {
-            mCurrentSelectedGroup = savedInstanceState.getInt(STATE_SELECTED_GROUP);
-            mCurrentSelectedChild = savedInstanceState.getInt(STATE_SELECTED_CHILD);
+            mCurrentSelectedGroup = savedInstanceState.getInt(STATE_SELECTED_GROUP, 0);
+            mCurrentSelectedChild = savedInstanceState.getInt(STATE_SELECTED_CHILD, 0);
             mFromSavedInstanceState = true;
+        } else {
+            mCurrentSelectedGroup = sp.getInt(STATE_SELECTED_GROUP, 0);
+            mCurrentSelectedChild = sp.getInt(STATE_SELECTED_CHILD, 0);
         }
 
         sensorArray = SensorArray.getInstance(getActivity());
-
-        // Select either the default item (0, 0) or the last selected item.
-        //TODO: Select no item as default (-1, -1)
-        selectItem(mCurrentSelectedGroup, mCurrentSelectedChild);
     }
 
     @Override
@@ -93,9 +94,7 @@ public class NavigationDrawerFragment extends Fragment {
             @Override
             public boolean onChildClick(ExpandableListView expandablelistview,
                                         View clickedView, int groupPosition, int childPosition, long childId) {
-
                 selectItem(groupPosition, childPosition);
-
                 return true;
             }
         });
@@ -109,14 +108,25 @@ public class NavigationDrawerFragment extends Fragment {
                 if (itemType == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
                     int childPosition = ExpandableListView.getPackedPositionChild(id);
                     int groupPosition = ExpandableListView.getPackedPositionGroup(id);
+                    // TODO: Display Sensor LongClick Dialog
 
                     return false;
 
                 } else if(itemType == ExpandableListView.PACKED_POSITION_TYPE_GROUP) {
                     int groupPosition = ExpandableListView.getPackedPositionGroup(id);
 
-
-
+                    if (groupPosition > 0) {
+                        DialogFragment dialog = new SensorDeviceListDialog();
+                        Bundle args = new Bundle();
+                        args.putInt(SensorDeviceListDialog.ARG_ID, groupPosition);
+                        args.putString(SensorDeviceListDialog.ARG_NAME,
+                                sensorArray.getGroup(groupPosition).getDeviceName());
+                        args.putBoolean(SensorDeviceListDialog.ARG_CONNECTED,
+                                sensorArray.getGroup(groupPosition).isConnected());
+                        dialog.setArguments(args);
+                        dialog.show(getFragmentManager().beginTransaction(), "showSensorDeviceListDialog");
+                        // DialogInterface is implemented in MainActivity
+                    }
                     return true;
                 } else {
                     return false;
@@ -124,13 +134,26 @@ public class NavigationDrawerFragment extends Fragment {
             }
         });
 
-        //mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
+        selectItem(mCurrentSelectedGroup, mCurrentSelectedChild);
+
         return mDrawerListView;
     }
 
     private void selectItem(int group, int child) {
         mCurrentSelectedGroup = group;
         mCurrentSelectedChild = child;
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        sp.edit().putInt(STATE_SELECTED_GROUP, group).apply();
+        sp.edit().putInt(STATE_SELECTED_CHILD, child).apply();
+
+        if (mDrawerListView != null) {
+            int position = mDrawerListView.getFlatListPosition(
+                    ExpandableListView.getPackedPositionForChild(group, child));
+
+            mDrawerListView.setItemChecked(position, true);
+            mDrawerListView.setSelection(position);
+        }
 
         if (mDrawerLayout != null) {
             mDrawerLayout.closeDrawer(mFragmentContainerView);
@@ -238,6 +261,7 @@ public class NavigationDrawerFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
         outState.putInt(STATE_SELECTED_GROUP, mCurrentSelectedGroup);
         outState.putInt(STATE_SELECTED_CHILD, mCurrentSelectedChild);
     }
@@ -255,6 +279,7 @@ public class NavigationDrawerFragment extends Fragment {
         // showGlobalContextActionBar, which controls the top-left area of the action bar.
         if (mDrawerLayout != null && isDrawerOpen()) {
             inflater.inflate(R.menu.drawer, menu);
+            menu.findItem(R.id.action_drawer_add).setEnabled(BTControl.enabled());
             showGlobalContextActionBar();
         }
         super.onCreateOptionsMenu(menu, inflater);
@@ -267,7 +292,11 @@ public class NavigationDrawerFragment extends Fragment {
         }
 
         switch (item.getItemId()) {
-            case 1:
+            case R.id.action_drawer_add:
+                BTDeviceList.show(getActivity());
+                return true;
+
+            case R.id.action_drawer_settings:
                 return true;
         }
 

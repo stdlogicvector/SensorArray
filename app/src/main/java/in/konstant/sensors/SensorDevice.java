@@ -19,10 +19,11 @@ public abstract class SensorDevice {
         mSensors = new ArrayList<Sensor>();
     }
 
-    abstract boolean initialize();
-    abstract void connect();
-    abstract void disconnect();
-    abstract int getConnectionState();
+    public abstract boolean initialize();
+    public abstract void connect();
+    public abstract void disconnect();
+    public abstract int getConnectionState();
+    public abstract boolean quit();
 
     public boolean isConnected() {
         return mConnected;

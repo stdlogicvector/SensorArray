@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Device List Item Dialogs -->
+    <string name="item_dialog_title">SensorDevice</string>
+
+    <array name="device_list_item_dialog_disconnected">
+        <item>Connect</item>
+        <item>Delete</item>
+    </array>
+    <array name="device_list_item_dialog_connected">
+        <item>Disconnect</item>
+        <item>Delete</item>
+        <item>Settings</item>
+    </array>
+
+    <string name="dialog_delete_all_title">Delete all Devices?</string>
+    <string name="dialog_delete_all_message">All Devices will be deleted!</string>
+    <string name="dialog_delete_title">Delete Device?</string>
+    <string name="dialog_delete_message">%1$s will be deleted!</string>
+    <string name="dialog_no_bt_title">Bluetooth is disabled</string>
+    <string name="dialog_no_bt_message">Enable Bluetooth?</string>
+
+</resources>

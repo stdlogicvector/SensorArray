@@ -2,6 +2,9 @@ package in.konstant.sensors;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +14,9 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import in.konstant.R;
@@ -47,11 +53,10 @@ public class SensorArray extends BaseExpandableListAdapter {
         devices = new HashMap<String, SensorDevice>();
         ids = new ArrayList<String>();
 
-        // Add internal SensorDevice
-        addDevice(new InternalSensorDevice(context));
-        getDevice(0).initialize();
-
         this.context = context;
+
+        loadDevices();
+        initDevices();
     }
 
     public static SensorArray getInstance(Context context) {
@@ -100,7 +105,7 @@ public class SensorArray extends BaseExpandableListAdapter {
 
     @Override
     public boolean isChildSelectable(int groupId, int childId) {
-        return true;    //TODO: Only if connected?
+        return getGroup(groupId).isConnected(); // Children only selectable if Connected
     }
 
     @Override
@@ -113,9 +118,21 @@ public class SensorArray extends BaseExpandableListAdapter {
     }
 
     public void clear() {
+        // TODO: Delete Internal Sensors, too?
         devices.clear();
         ids.clear();
         notifyDataSetInvalidated();
+    }
+
+    public void addDevice(String address) {
+        SensorDevice newDevice = new ExternalSensorDevice(context, address);
+        addDevice(newDevice);
+    }
+
+    public void addDevice(String address, String name) {
+        SensorDevice newDevice = new ExternalSensorDevice(context, address);
+        newDevice.setDeviceName(name);
+        addDevice(newDevice);
     }
 
     public void addDevice(SensorDevice device) {
@@ -138,6 +155,37 @@ public class SensorArray extends BaseExpandableListAdapter {
 
     public boolean containsDevice(String address) {
         return devices.containsKey(address);
+    }
+
+    private void loadDevices() {
+        SharedPreferences deviceList = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        Set<String> addresses = deviceList.getStringSet(DEVICE_ADDRESSES, new HashSet<String>());
+
+        // Internal Device
+        addDevice(new InternalSensorDevice(context));
+
+        // External Devices
+        for (String address : addresses) {
+            if (!devices.containsKey(address))
+                addDevice(address);
+        }
+    }
+
+    public void saveDevices() {
+        SharedPreferences deviceList = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = deviceList.edit();
+
+        editor.putStringSet(DEVICE_ADDRESSES, devices.keySet()).apply();
+    }
+
+    private void initDevices() {
+        // Only initialize internal Device, External Devices are initialized when connected
+        getDevice(0).initialize();
+/*
+      for (SensorDevice device : devices.values()) {
+            device.initialize();
+        }
+*/
     }
 
     @Override

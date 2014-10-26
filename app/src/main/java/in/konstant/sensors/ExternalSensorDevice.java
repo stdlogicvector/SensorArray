@@ -9,8 +9,8 @@ public class ExternalSensorDevice extends SensorDevice {
     private final Context context;
     private BTDevice btDevice;
 
-    public ExternalSensorDevice(Context context) {
-        super(BluetoothAdapter.getDefaultAdapter().getAddress());
+    public ExternalSensorDevice(Context context, String address) {
+        super(address);
         this.context = context;
 
         btDevice = new BTDevice(context, mAddress);
@@ -26,7 +26,13 @@ public class ExternalSensorDevice extends SensorDevice {
     }
 
     public void disconnect() {
+        btDevice.disconnect();
+    }
 
+    public boolean quit() {
+        disconnect();
+        btDevice.destroy();
+        return true;
     }
 
     public int getConnectionState() {
@@ -39,7 +45,7 @@ public class ExternalSensorDevice extends SensorDevice {
     }
 
     public String getBluetoothName() {
-        return BluetoothAdapter.getDefaultAdapter().getName();
+        return btDevice.getName();
     }
 
 }
