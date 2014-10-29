@@ -6,14 +6,12 @@ import android.content.Context;
 import in.konstant.BT.BTDevice;
 
 public class ExternalSensorDevice extends SensorDevice {
-    private final Context context;
     private BTDevice btDevice;
 
-    public ExternalSensorDevice(Context context, String address) {
+    public ExternalSensorDevice(String address) {
         super(address);
-        this.context = context;
 
-        btDevice = new BTDevice(context, mAddress);
+        btDevice = new BTDevice(mAddress);
     }
 
     public boolean initialize() {

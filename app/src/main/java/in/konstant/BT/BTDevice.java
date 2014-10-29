@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelUuid;
@@ -48,11 +47,8 @@ public class BTDevice {
     private String mManufacturer;
     private String mCompany;
 
-    private final Context mContext;
     private Handler mHandler;
 
-//    private final Object mBluetoothService;
-//    private final Class mBluetoothServiceClass;
     private final BluetoothAdapter mBluetoothAdapter;
     private final BluetoothDevice mBluetoothDevice;
 
@@ -61,15 +57,11 @@ public class BTDevice {
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
 
-    public BTDevice(Context context, String address) {
+    public BTDevice(String address) {
         if (DBG) Log.d(TAG, "BTDevice(" + address + ")");
 
-        mContext = context;
         mHandler = null;
         mAddress = address;
-
-//        mBluetoothService = mContext.getSystemService(Context.BLUETOOTH_SERVICE);
-//        mBluetoothServiceClass = mBluetoothService.getClass();
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(mAddress);
@@ -77,8 +69,8 @@ public class BTDevice {
         mState = STATE.DISCONNECTED;
     }
 
-    public BTDevice(Context context, Handler handler, String address) {
-        this(context, address);
+    public BTDevice(Handler handler, String address) {
+        this(address);
 
         mHandler = handler;
     }

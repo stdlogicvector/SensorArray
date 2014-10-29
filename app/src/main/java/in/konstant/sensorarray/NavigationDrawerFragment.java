@@ -3,10 +3,8 @@ package in.konstant.sensorarray;
 
 import android.app.Activity;
 import android.app.ActionBar;
-import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.content.DialogInterface;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -26,7 +24,7 @@ import android.widget.ExpandableListView;
 import in.konstant.BT.BTControl;
 import in.konstant.BT.BTDeviceList;
 import in.konstant.R;
-import in.konstant.sensors.SensorArray;
+import in.konstant.sensors.SensorArrayAdapter;
 
 public class NavigationDrawerFragment extends Fragment {
     private static final String TAG = "NavDrawer";
@@ -45,13 +43,13 @@ public class NavigationDrawerFragment extends Fragment {
     private ExpandableListView mDrawerListView;
     private View mFragmentContainerView;
 
-    private int mCurrentSelectedGroup = 0;
-    private int mCurrentSelectedChild = 0;
+    private int mSelectedGroup = 0;
+    private int mSelectedChild = 0;
 
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
-    private SensorArray sensorArray;
+    private SensorArrayAdapter sensorArrayAdapter;
 
     public NavigationDrawerFragment() {
     }
@@ -64,15 +62,15 @@ public class NavigationDrawerFragment extends Fragment {
         mUserLearnedDrawer = sp.getBoolean(PREF_USER_LEARNED_DRAWER, false);
 
         if (savedInstanceState != null) {
-            mCurrentSelectedGroup = savedInstanceState.getInt(STATE_SELECTED_GROUP, 0);
-            mCurrentSelectedChild = savedInstanceState.getInt(STATE_SELECTED_CHILD, 0);
+            mSelectedGroup = savedInstanceState.getInt(STATE_SELECTED_GROUP, 0);
+            mSelectedChild = savedInstanceState.getInt(STATE_SELECTED_CHILD, 0);
             mFromSavedInstanceState = true;
         } else {
-            mCurrentSelectedGroup = sp.getInt(STATE_SELECTED_GROUP, 0);
-            mCurrentSelectedChild = sp.getInt(STATE_SELECTED_CHILD, 0);
+            mSelectedGroup = sp.getInt(STATE_SELECTED_GROUP, 0);
+            mSelectedChild = sp.getInt(STATE_SELECTED_CHILD, 0);
         }
 
-        sensorArray = SensorArray.getInstance(getActivity());
+        sensorArrayAdapter = new SensorArrayAdapter(getActivity());
     }
 
     @Override
@@ -88,7 +86,7 @@ public class NavigationDrawerFragment extends Fragment {
         mDrawerListView = (ExpandableListView) inflater.inflate(
                 R.layout.fragment_navdrawer, container, false);
 
-        mDrawerListView.setAdapter(sensorArray);
+        mDrawerListView.setAdapter(sensorArrayAdapter);
 
         mDrawerListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
@@ -120,9 +118,9 @@ public class NavigationDrawerFragment extends Fragment {
                         Bundle args = new Bundle();
                         args.putInt(SensorDeviceListDialog.ARG_ID, groupPosition);
                         args.putString(SensorDeviceListDialog.ARG_NAME,
-                                sensorArray.getGroup(groupPosition).getDeviceName());
+                                sensorArrayAdapter.getGroup(groupPosition).getDeviceName());
                         args.putBoolean(SensorDeviceListDialog.ARG_CONNECTED,
-                                sensorArray.getGroup(groupPosition).isConnected());
+                                sensorArrayAdapter.getGroup(groupPosition).isConnected());
                         dialog.setArguments(args);
                         dialog.show(getFragmentManager().beginTransaction(), "showSensorDeviceListDialog");
                         // DialogInterface is implemented in MainActivity
@@ -134,25 +132,21 @@ public class NavigationDrawerFragment extends Fragment {
             }
         });
 
-        selectItem(mCurrentSelectedGroup, mCurrentSelectedChild);
+        selectItem(mSelectedGroup, mSelectedChild);
 
         return mDrawerListView;
     }
 
     private void selectItem(int group, int child) {
-        mCurrentSelectedGroup = group;
-        mCurrentSelectedChild = child;
+        mSelectedGroup = group;
+        mSelectedChild = child;
 
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(getActivity());
         sp.edit().putInt(STATE_SELECTED_GROUP, group).apply();
         sp.edit().putInt(STATE_SELECTED_CHILD, child).apply();
 
-        if (mDrawerListView != null) {
-            int position = mDrawerListView.getFlatListPosition(
-                    ExpandableListView.getPackedPositionForChild(group, child));
-
-            mDrawerListView.setItemChecked(position, true);
-            mDrawerListView.setSelection(position);
+        if (sensorArrayAdapter != null) {
+            sensorArrayAdapter.selectChild(group, child);
         }
 
         if (mDrawerLayout != null) {
@@ -262,8 +256,8 @@ public class NavigationDrawerFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putInt(STATE_SELECTED_GROUP, mCurrentSelectedGroup);
-        outState.putInt(STATE_SELECTED_CHILD, mCurrentSelectedChild);
+        outState.putInt(STATE_SELECTED_GROUP, mSelectedGroup);
+        outState.putInt(STATE_SELECTED_CHILD, mSelectedChild);
     }
 
     @Override
@@ -279,7 +273,17 @@ public class NavigationDrawerFragment extends Fragment {
         // showGlobalContextActionBar, which controls the top-left area of the action bar.
         if (mDrawerLayout != null && isDrawerOpen()) {
             inflater.inflate(R.menu.drawer, menu);
-            menu.findItem(R.id.action_drawer_add).setEnabled(BTControl.enabled());
+
+            MenuItem addDevice = menu.findItem(R.id.action_drawer_add);
+
+            if (BTControl.enabled()) {
+                addDevice.setEnabled(true)
+                        .setIcon(R.drawable.ai_add_device);
+            } else {
+                addDevice.setEnabled(false)
+                        .setIcon(R.drawable.ai_add_device_disabled);
+            }
+
             showGlobalContextActionBar();
         }
         super.onCreateOptionsMenu(menu, inflater);

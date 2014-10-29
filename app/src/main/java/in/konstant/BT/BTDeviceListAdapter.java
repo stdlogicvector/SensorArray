@@ -17,10 +17,10 @@ import in.konstant.R;
 public class BTDeviceListAdapter extends BaseAdapter {
 
     private class BTDeviceListEntry {
-        String name;
-        String type;
+        public final String name;
+        public final String type;
 
-        public BTDeviceListEntry(String name, String type) {
+        public BTDeviceListEntry(final String name, final String type) {
             this.name = name;
             this.type = type;
         }
@@ -31,7 +31,7 @@ public class BTDeviceListAdapter extends BaseAdapter {
     private ArrayList<String> ids;
     private HashMap<String, BTDeviceListEntry> values;
 
-    public BTDeviceListAdapter(Context context) {
+    public BTDeviceListAdapter(final Context context) {
         super();
         this.context = context;
 
@@ -39,14 +39,14 @@ public class BTDeviceListAdapter extends BaseAdapter {
         values = new HashMap<String, BTDeviceListEntry>();
     }
 
-    public void add(String name, String type, String address) {
+    public void add(final String name, final String type, final String address) {
         if (!values.containsKey(address)) {
             values.put(address, new BTDeviceListEntry(name, type));
             ids.add(address);
         }
     }
 
-    public void remove(String address) {
+    public void remove(final String address) {
         if (values.containsKey(address)) {
             values.remove(address);
             ids.remove(ids.indexOf(address));
@@ -62,18 +62,18 @@ public class BTDeviceListAdapter extends BaseAdapter {
         return ids.size();
     }
 
-    public BTDeviceListEntry getItem(int id) {
+    public BTDeviceListEntry getItem(final int id) {
         if (values.containsKey(ids.get(id)))
             return values.get(ids.get(id));
         else
             return null;
     }
 
-    public long getItemId(int id) {
+    public long getItemId(final int id) {
         return id;
     }
 
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, final ViewGroup parent) {
         if (convertView == null) {
             LayoutInflater inflater = ((Activity) context).getLayoutInflater();
             convertView = inflater.inflate(R.layout.arrayadapter_btdevicelist, null);

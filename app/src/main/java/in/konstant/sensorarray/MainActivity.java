@@ -4,7 +4,6 @@ import android.app.Activity;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
@@ -13,11 +12,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.Toast;
 
@@ -25,19 +21,26 @@ import in.konstant.BT.BTControl;
 import in.konstant.BT.BTDeviceList;
 import in.konstant.R;
 import in.konstant.sensors.SensorArray;
+import in.konstant.sensors.SensorArrayAdapter;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
                    SensorDeviceListDialog.SensorDeviceListDialogListener {
 
     MenuItem miBluetooth;
+    SensorArray sensorArray;
 
     private NavigationDrawerFragment mNavigationDrawerFragment;
     private CharSequence mTitle;    // Last screen title. For use in {@link #restoreActionBar()}.
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("MainActivity", "onCreate");
+
+        sensorArray = SensorArray.getInstance();
+        sensorArray.load(getApplicationContext());
+
         setContentView(R.layout.activity_main);
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
@@ -63,13 +66,13 @@ public class MainActivity extends Activity
 
     @Override
     protected void onDestroy() {
-        SensorArray.getInstance(this).saveDevices();
+        sensorArray.save();
         BTControl.unregisterStateChangeReceiver(this, BTStateChangeReceiver);
         super.onDestroy();
     }
 
     @Override
-    public void onNavigationDrawerItemSelected(int group, int child) {
+    public void onNavigationDrawerItemSelected(final int group, final int child) {
         // update the main content by replacing fragments
 
         //TODO: Fragment Classes for Device, Sensor, etc. Views
@@ -81,7 +84,7 @@ public class MainActivity extends Activity
                 .commit();
     }
 
-    public void onFragmentCreated(String title) {
+    public void onFragmentCreated(final String title) {
         mTitle = title;
     }
 
@@ -93,7 +96,7 @@ public class MainActivity extends Activity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         if (!mNavigationDrawerFragment.isDrawerOpen()) {
             getMenuInflater().inflate(R.menu.main, menu);
 
@@ -108,7 +111,7 @@ public class MainActivity extends Activity
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(final MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -128,7 +131,7 @@ public class MainActivity extends Activity
 
     private final BroadcastReceiver BTStateChangeReceiver = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent intent) {
+        public void onReceive(final Context context, final Intent intent) {
 
             if (intent.getAction().equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, -1);
@@ -145,7 +148,7 @@ public class MainActivity extends Activity
         }
     };
 
-    private void setBTIcon(boolean state) {
+    private void setBTIcon(final boolean state) {
         if (state) {
             miBluetooth.setIcon(R.drawable.ai_bluetooth_connected);
         } else {
@@ -153,12 +156,10 @@ public class MainActivity extends Activity
         }
     }
 
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         if (requestCode == BTDeviceList.REQ_DEVICE_LIST && resultCode == Activity.RESULT_OK) {
             String address = data.getExtras().getString(BTDeviceList.EXTRA_DEVICE_ADDRESS);
             String name = data.getExtras().getString(BTDeviceList.EXTRA_DEVICE_NAME);
-
-            SensorArray sensorArray = SensorArray.getInstance(this);
 
             if (address != null) {
                 if (sensorArray.containsDevice(address)) {
@@ -171,40 +172,37 @@ public class MainActivity extends Activity
     }
 
     @Override
-    public void onSensorDeviceListDialogConnect(int id, boolean connected) {
-        SensorArray sensorArray = SensorArray.getInstance(this);
+    public void onSensorDeviceListDialogConnect(final int id, final boolean connected) {
 
         if (connected) {
-            sensorArray.getGroup(id).disconnect();
+            sensorArray.getDevice(id).disconnect();
         } else {
             if (BTControl.enabled()) {
-                sensorArray.getGroup(id).connect();
+                sensorArray.getDevice(id).connect();
             }
         }
     }
 
     @Override
-    public void onSensorDeviceListDialogSettings(int id) {
+    public void onSensorDeviceListDialogSettings(final int id) {
 
     }
 
     @Override
-    public void onSensorDeviceListDialogDelete(int id) {
-        final int deviceId = id; // For Access from inner Class
-        final SensorArray sensorArray = SensorArray.getInstance(this);
+    public void onSensorDeviceListDialogDelete(final int id) {
 
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle(R.string.dialog_delete_title)
                 .setMessage(getResources().getString(
                         R.string.dialog_delete_message,
-                        sensorArray.getGroup(id).getDeviceName()))
+                        sensorArray.getDevice(id).getDeviceName()))
                 .setPositiveButton("Yes", new DialogInterface.OnClickListener()
                 {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        sensorArray.getGroup(deviceId).quit();
-                        sensorArray.removeDevice(deviceId);
+                        sensorArray.getDevice(id).quit();
+                        sensorArray.removeDevice(id);
                     }
                 })
                 .setNegativeButton("No", null)

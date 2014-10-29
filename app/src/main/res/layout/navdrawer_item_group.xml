@@ -7,7 +7,7 @@
     android:columnCount="3"
     android:paddingTop="3dp"
     android:paddingBottom="3dp"
-    android:background="@drawable/nav_selector">
+    android:background="@drawable/nav_list_item_normal">
 
     <ImageView
         android:id="@+id/icSensorDeviceIcon"

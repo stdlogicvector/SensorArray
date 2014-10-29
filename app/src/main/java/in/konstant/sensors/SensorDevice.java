@@ -14,7 +14,7 @@ public abstract class SensorDevice {
         public static final int CONNECTED = 1;
     }
 
-    public SensorDevice(String address) {
+    public SensorDevice(final String address) {
         this.mAddress = address;
         mSensors = new ArrayList<Sensor>();
     }
@@ -39,7 +39,7 @@ public abstract class SensorDevice {
         return mDeviceName;
     }
 
-    public void setDeviceName(String name) {
+    public void setDeviceName(final String name) {
         this.mDeviceName = name;
     }
 
@@ -47,7 +47,7 @@ public abstract class SensorDevice {
         return mSensors.size();
     }
 
-    public Sensor getSensor(int id) {
+    public Sensor getSensor(final int id) {
         return mSensors.get(id);
     }
 }

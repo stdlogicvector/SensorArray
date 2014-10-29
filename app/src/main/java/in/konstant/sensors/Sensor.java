@@ -4,32 +4,12 @@ import java.util.ArrayList;
 
 public abstract class Sensor {
 
-    public static enum TYPE {
-        GENERIC,
-        ADC,
-        AUDIO,
-        COMPASS,
-        COLOR,
-        DISTANCE,
-        GAS,
-        HUMIDITY,
-        LIGHT,
-        MAGNETIC,
-        POLARISATION,
-        PRESSURE,
-        ROTATION,
-        RADIATION,
-        SPATIAL,
-        TEMPERATURE,
-        THERMAL
-    }
-
-    TYPE type;
+    Type type;
     ArrayList<Measurement> mMeasurements;
 
     public Sensor() {
         mMeasurements = new ArrayList<Measurement>();
-        type = TYPE.GENERIC;
+        type = Type.GENERIC;
     }
 
     public abstract String getName();
@@ -39,20 +19,20 @@ public abstract class Sensor {
         return mMeasurements.size();
     }
 
-    public TYPE getType() {
+    public Type getType() {
         return this.type;
     }
 
     public abstract void activate();
     public abstract void deactivate();
 
-    void setRange(int measurement, int range) {
+    void setRange(final int measurement, final int range) {
         if (measurement >= 0 && measurement < mMeasurements.size()) {
             mMeasurements.get(measurement).setRange(range);
         }
     }
 
-    abstract Measurement getMeasurement(int id);
+    abstract Measurement getMeasurement(final int id);
 
-    abstract float[] getValue(int id);
+    abstract float[] getValue(final int id);
 }

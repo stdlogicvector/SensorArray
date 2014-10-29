@@ -4,13 +4,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import java.util.ArrayList;
-
 public class InternalSensor extends Sensor implements SensorEventListener {
     private android.hardware.Sensor mSensor;
     private SensorManager mSensorManager;
-
-    private String name;
 
     private float[] lastValues;
     private float timestamp;
@@ -27,7 +23,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
     }
 
     public String getName() {
-        return name;
+        return type.toString();
     }
 
     public String getPart() {
@@ -77,8 +73,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
         switch (mSensor.getType()) {
             case android.hardware.Sensor.TYPE_GYROSCOPE_UNCALIBRATED:
 
-                name = "Gyroscope";
-                type = TYPE.ROTATION;
+                type = Type.ROTATION;
 
                 offsets = new int[2];
                 offsets[0] = 0;
@@ -107,8 +102,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED:
 
-                name = "Magnetometer";
-                type = TYPE.MAGNETIC;
+                type = Type.MAGNETIC;
 
                 offsets = new int[2];
                 offsets[0] = 0;
@@ -140,8 +134,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
             case android.hardware.Sensor.TYPE_GRAVITY:
             case android.hardware.Sensor.TYPE_ACCELEROMETER:
 
-                name = "Accelerometer";
-                type = TYPE.SPATIAL;
+                type = Type.ACCELERATION;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -161,8 +154,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_MAGNETIC_FIELD:
 
-                name = "Magnetometer";
-                type = TYPE.MAGNETIC;
+                type = Type.MAGNETIC;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -183,8 +175,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_GYROSCOPE:
 
-                name = "Gyroscope";
-                type = TYPE.ROTATION;
+                type = Type.ROTATION;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -204,8 +195,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_LIGHT:
 
-                name = "Light Sensor";
-                type = TYPE.LIGHT;
+                type = Type.LIGHT;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -225,8 +215,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_AMBIENT_TEMPERATURE:
 
-                name = "Thermometer";
-                type = TYPE.TEMPERATURE;
+                type = Type.TEMPERATURE;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -245,8 +234,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_PROXIMITY:
 
-                name = "Proximity Sensor";
-                type = TYPE.DISTANCE;
+                type = Type.DISTANCE;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -265,8 +253,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
 
             case android.hardware.Sensor.TYPE_PRESSURE:
 
-                name = "Barometer";
-                type = TYPE.PRESSURE;
+                type = Type.PRESSURE;
 
                 offsets = new int[1];
                 offsets[0] = 0;

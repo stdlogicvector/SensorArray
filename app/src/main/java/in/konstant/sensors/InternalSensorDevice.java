@@ -9,12 +9,10 @@ import android.os.Build;
 import java.util.List;
 
 public class InternalSensorDevice extends SensorDevice {
-    private final Context mContext;
     private final SensorManager mSensorManager;
 
-    public InternalSensorDevice(Context context) {
+    public InternalSensorDevice(final Context context) {
         super(BluetoothAdapter.getDefaultAdapter().getAddress());
-        this.mContext = context;
 
         this.mDeviceName = Build.MODEL + " (Internal)";
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);

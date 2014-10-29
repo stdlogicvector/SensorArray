@@ -3,6 +3,7 @@ package in.konstant.sensorarray;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.TextView;
 import in.konstant.R;
 import in.konstant.sensors.Sensor;
 import in.konstant.sensors.SensorArray;
+import in.konstant.sensors.SensorArrayAdapter;
 
 public class SensorFragment extends Fragment {
 
@@ -48,8 +50,8 @@ public class SensorFragment extends Fragment {
         this.deviceNumber = getArguments().getInt(ARG_DEVICE_NUMBER);
         this.sensorNumber = getArguments().getInt(ARG_SENSOR_NUMBER);
 
-        sensorArray = SensorArray.getInstance(getActivity());
-        sensor = sensorArray.getChild(deviceNumber, sensorNumber);
+        sensorArray = SensorArray.getInstance();
+        sensor = sensorArray.getDevice(deviceNumber).getSensor(sensorNumber);
 
         ((MainActivity) getActivity()).onFragmentCreated(sensor.getName());
     }
