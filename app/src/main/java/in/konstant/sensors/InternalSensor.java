@@ -41,7 +41,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
     public void deactivate() {
         mSensorManager.unregisterListener(this);
     }
-
+/*
     public float[] getValue(int id) {
         if (id >= 0 && id < mMeasurements.size()) {
             int size = mMeasurements.get(id).getSize();
@@ -56,7 +56,7 @@ public class InternalSensor extends Sensor implements SensorEventListener {
             return null;
         }
     }
-
+*/
     public void onSensorChanged(SensorEvent event) {
         lastValues = event.values;
         timestamp = event.timestamp;

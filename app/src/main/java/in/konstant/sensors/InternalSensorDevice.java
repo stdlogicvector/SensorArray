@@ -5,6 +5,7 @@ import android.content.Context;
 import android.hardware.*;
 import android.hardware.Sensor;
 import android.os.Build;
+import android.os.HandlerThread;
 
 import java.util.List;
 
@@ -17,7 +18,11 @@ public class InternalSensorDevice extends SensorDevice {
         this.mDeviceName = Build.MODEL + " (Internal)";
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 
-        mConnected = (mSensorManager != null);
+        if (mSensorManager != null) {
+            mConnectionState = STATE.CONNECTED;
+        } else {
+            mConnectionState = STATE.DISCONNECTED;
+        }
     }
 
     public boolean initialize() {
@@ -46,14 +51,6 @@ public class InternalSensorDevice extends SensorDevice {
     public boolean quit() {
         disconnect();
         return true;
-    }
-
-    public int getConnectionState() {
-        if (mSensorManager != null) {
-            return STATE.CONNECTED;
-        } else{
-            return STATE.DISCONNECTED;
-        }
     }
 
     public String getBluetoothName() {

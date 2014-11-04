@@ -5,9 +5,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Observable;
 
-public class SensorArray extends Observable {
+public class SensorArray
+        extends Observable
+        implements SensorDeviceStateListener {
 
     private static SensorArray instance;
+
+    private ArrayList<SensorArrayStateListener> mStateListeners;
 
     private ArrayList<String> ids;
     private HashMap<String, SensorDevice> devices;
@@ -15,6 +19,7 @@ public class SensorArray extends Observable {
     private SensorArray() {
         devices = new HashMap<String, SensorDevice>();
         ids = new ArrayList<String>();
+        mStateListeners = new ArrayList<SensorArrayStateListener>();
     }
 
     public static SensorArray getInstance() {
@@ -22,6 +27,28 @@ public class SensorArray extends Observable {
             instance = new SensorArray();
         }
         return instance;
+    }
+
+    public boolean registerStateListener(SensorArrayStateListener listener) {
+        return mStateListeners.add(listener);
+    }
+
+    public boolean unregisterStateListener(SensorArrayStateListener listener) {
+        return mStateListeners.remove(listener);
+    }
+
+    private void onSensorDeviceAdd(final SensorDevice device) {
+        for (SensorArrayStateListener listener : mStateListeners) {
+            listener.onSensorDeviceAdd(device);
+        }
+    }
+
+    public void onSensorDeviceStateChange(final SensorDevice device, final int state) {
+        // Connection State of a SensorDevice has changed
+
+
+        // Notify Observers to initiate redrawing of lists
+        changed();
     }
 
     private void changed() {

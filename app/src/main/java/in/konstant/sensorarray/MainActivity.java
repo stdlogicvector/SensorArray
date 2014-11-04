@@ -22,10 +22,12 @@ import in.konstant.BT.BTDeviceList;
 import in.konstant.R;
 import in.konstant.sensors.SensorArray;
 import in.konstant.sensors.SensorArrayAdapter;
+import in.konstant.sensors.SensorDeviceStateListener;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
-                   SensorDeviceListDialog.SensorDeviceListDialogListener {
+                   SensorDeviceListDialog.SensorDeviceListDialogListener
+                   {
 
     MenuItem miBluetooth;
     SensorArray sensorArray;

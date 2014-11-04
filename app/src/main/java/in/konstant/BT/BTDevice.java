@@ -23,16 +23,6 @@ public class BTDevice {
     // Standard Serial Port UUID
     private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
 
-    public static final class MESSAGE {
-        public static final int CONNECTED = 1;
-        public static final int CONNECTING = 2;
-        public static final int DISCONNECTED = 3;
-        public static final int CONNECTION_LOST = 4;
-        public static final int CONNECTION_FAILED = 5;
-        public static final int DATA_SENT = 6;
-        public static final int DATA_RECEIVED = 7;
-    }
-
     public static final class STATE {
         public static final int DISCONNECTED = 0;
         public static final int CONNECTING = 1;
@@ -43,16 +33,14 @@ public class BTDevice {
     public static final String EXTRA_DATA = "in.konstant.BT.device.extra.DATA";
 
     private String mAddress;
-    private String mName;
-    private String mManufacturer;
-    private String mCompany;
 
-    private Handler mHandler;
+    private int mState;
+
+    private BTConnectionListener mConnectionListener;
+    private BTDataListener mDataListener;
 
     private final BluetoothAdapter mBluetoothAdapter;
     private final BluetoothDevice mBluetoothDevice;
-
-    private int mState;
 
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
@@ -60,7 +48,6 @@ public class BTDevice {
     public BTDevice(String address) {
         if (DBG) Log.d(TAG, "BTDevice(" + address + ")");
 
-        mHandler = null;
         mAddress = address;
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -69,16 +56,13 @@ public class BTDevice {
         mState = STATE.DISCONNECTED;
     }
 
-    public BTDevice(Handler handler, String address) {
-        this(address);
-
-        mHandler = handler;
+    public void setConnectionListener(BTConnectionListener listener) {
+        this.mConnectionListener = listener;
     }
 
-    public void setHandler(Handler handler) {
-        mHandler = handler;
+    public void setDataListener(BTDataListener listener) {
+        this.mDataListener = listener;
     }
-
 
     public void destroy() {
         if (DBG) Log.d(TAG, "destroy()");
@@ -116,7 +100,7 @@ public class BTDevice {
         mConnectThread = new ConnectThread(mBluetoothDevice);
         mConnectThread.start();
 
-        sendMessage(MESSAGE.CONNECTING, null);
+        if (mConnectionListener != null) mConnectionListener.onConnecting();
 
         setState(STATE.CONNECTING);
     }
@@ -150,7 +134,7 @@ public class BTDevice {
         }
 
         if (mState == STATE.CONNECTED) {
-            sendMessage(MESSAGE.DISCONNECTED, null);
+            if (mConnectionListener != null) mConnectionListener.onDisconnected();
         }
 
         setState(STATE.DISCONNECTED);
@@ -201,23 +185,6 @@ public class BTDevice {
         mState = state;
     }
 
-    private void sendMessage(int event, byte[] data) {
-        if (DBG) Log.d(TAG, "sendMessage(" + event + ")");
-
-        if (mHandler != null) {
-            android.os.Message msg = mHandler.obtainMessage(event);
-            Bundle b = new Bundle();
-            b.putString(EXTRA_ADDRESS, mAddress);
-
-            if (data != null && data.length > 0) {
-                b.putByteArray(EXTRA_DATA, data);
-            }
-
-            msg.setData(b);
-            mHandler.sendMessage(msg);
-        }
-    }
-
     // State Changers ------------------------------------------------------------------------------
 
     private void connected(BluetoothSocket socket, BluetoothDevice device) {
@@ -241,13 +208,13 @@ public class BTDevice {
 
     private void connectionLost() {
         if (DBG) Log.d(TAG, "connectionLost()");
-        sendMessage(MESSAGE.CONNECTION_LOST, null);
+        if (mConnectionListener != null) mConnectionListener.onConnectionLost();
         setState(STATE.DISCONNECTED);
     }
 
     private void connectionFailed() {
         if (DBG) Log.d(TAG, "connectionFailed()");
-        sendMessage(MESSAGE.CONNECTION_FAILED, null);
+        if (mConnectionListener != null) mConnectionListener.onConnectionFailed();
         setState(STATE.DISCONNECTED);
     }
 
@@ -346,7 +313,7 @@ public class BTDevice {
             if (DBG) Log.d(TAG, "BEGIN ConnectedThread");
             setName("ConnectedThread");
 
-            sendMessage(MESSAGE.CONNECTED, null);
+            if (mConnectionListener != null) mConnectionListener.onConnected();
 
             while (mmConnected) {
                 try {
@@ -355,7 +322,7 @@ public class BTDevice {
                     if (bytes > 0) {
                         byte[] buffer = new byte[bytes];
                         mmInStream.read(buffer);
-                        sendMessage(MESSAGE.DATA_RECEIVED, buffer);
+                        if (mDataListener != null) mDataListener.onDataReceived(buffer);
                     }
                 } catch (IOException e) {
                     if (DBG) Log.d(TAG, "ConnectedThread run() inStream read() failed", e);
@@ -374,7 +341,7 @@ public class BTDevice {
             if (DBG) Log.d(TAG, "ConnectedThread write()");
             try {
                 mmOutStream.write(buffer);
-                sendMessage(MESSAGE.DATA_SENT, buffer);
+                if (mDataListener != null) mDataListener.onDataSent(buffer);
             } catch (IOException e) {
                 if (DBG) Log.d(TAG, "ConnectedThread write() outStream write() failed", e);
             }
