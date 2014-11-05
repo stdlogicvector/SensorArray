@@ -9,7 +9,12 @@ import android.os.HandlerThread;
 
 import java.util.List;
 
-public class InternalSensorDevice extends SensorDevice {
+public class InternalSensorDevice
+        extends SensorDevice {
+
+    private final static String TAG = "InternalSensorDevice";
+    private final static boolean DBG = false;
+
     private final SensorManager mSensorManager;
 
     public InternalSensorDevice(final Context context) {
@@ -18,11 +23,7 @@ public class InternalSensorDevice extends SensorDevice {
         this.mDeviceName = Build.MODEL + " (Internal)";
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 
-        if (mSensorManager != null) {
-            mConnectionState = STATE.CONNECTED;
-        } else {
-            mConnectionState = STATE.DISCONNECTED;
-        }
+        mConnected = (mSensorManager != null);
     }
 
     public boolean initialize() {

@@ -4,7 +4,13 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-public class InternalSensor extends Sensor implements SensorEventListener {
+public class InternalSensor
+        extends Sensor
+        implements SensorEventListener {
+
+    private final static String TAG = "InternalSensor";
+    private final static boolean DBG = false;
+
     private android.hardware.Sensor mSensor;
     private SensorManager mSensorManager;
 

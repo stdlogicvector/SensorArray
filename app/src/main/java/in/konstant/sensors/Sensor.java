@@ -22,7 +22,7 @@ public abstract class Sensor {
         return mValueListeners.remove(listener);
     }
 
-    protected void onSensorValueChanged() {
+    protected void signalSensorValueChanged() {
         for (SensorValueListener listener : mValueListeners) {
             listener.onSensorValueChanged();
         }

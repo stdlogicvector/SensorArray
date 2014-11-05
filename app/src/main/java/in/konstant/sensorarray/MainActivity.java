@@ -21,12 +21,14 @@ import in.konstant.BT.BTControl;
 import in.konstant.BT.BTDeviceList;
 import in.konstant.R;
 import in.konstant.sensors.SensorArray;
-import in.konstant.sensors.SensorArrayAdapter;
-import in.konstant.sensors.SensorDeviceStateListener;
+import in.konstant.sensors.SensorArrayEventListener;
+import in.konstant.sensors.SensorDevice;
+import in.konstant.sensors.SensorEvent;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks,
-                   SensorDeviceListDialog.SensorDeviceListDialogListener
+                   SensorDeviceListDialog.SensorDeviceListDialogListener,
+                   SensorArrayEventListener
                    {
 
     MenuItem miBluetooth;
@@ -42,6 +44,8 @@ public class MainActivity extends Activity
 
         sensorArray = SensorArray.getInstance();
         sensorArray.load(getApplicationContext());
+
+        sensorArray.registerStateListener(this);
 
         setContentView(R.layout.activity_main);
 
@@ -64,11 +68,19 @@ public class MainActivity extends Activity
     @Override
     protected void onPause() {
         super.onPause();
+        sensorArray.unregisterStateListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sensorArray.registerStateListener(this);
     }
 
     @Override
     protected void onDestroy() {
         sensorArray.save();
+        sensorArray.unregisterStateListener(this);
         BTControl.unregisterStateChangeReceiver(this, BTStateChangeReceiver);
         super.onDestroy();
     }
@@ -170,6 +182,46 @@ public class MainActivity extends Activity
                     sensorArray.addDevice(address, name);
                 }
             }
+        }
+    }
+
+    public void onSensorArrayEvent(final SensorDevice device, final int event) {
+        switch (event) {
+            case SensorEvent.ADDED:
+                Toast.makeText(this,
+                               getResources().getString(R.string.device_added, device.getDeviceName()),
+                               Toast.LENGTH_SHORT).show();
+                break;
+            case SensorEvent.REMOVED:
+                Toast.makeText(this,
+                        getResources().getString(R.string.device_removed, device.getDeviceName()),
+                        Toast.LENGTH_SHORT).show();
+                break;
+            case SensorEvent.CONNECTED:
+                Toast.makeText(this,
+                        getResources().getString(R.string.device_connected, device.getDeviceName()),
+                        Toast.LENGTH_SHORT).show();
+                break;
+            case SensorEvent.CONNECTING:
+                Toast.makeText(this,
+                        getResources().getString(R.string.device_connecting, device.getDeviceName()),
+                        Toast.LENGTH_SHORT).show();
+                break;
+            case SensorEvent.DISCONNECTED:
+                Toast.makeText(this,
+                        getResources().getString(R.string.device_disconnected, device.getDeviceName()),
+                        Toast.LENGTH_SHORT).show();
+                break;
+            case SensorEvent.CONNECTION_FAILED:
+                Toast.makeText(this,
+                        getResources().getString(R.string.device_connection_failed, device.getDeviceName()),
+                        Toast.LENGTH_SHORT).show();
+                break;
+            case SensorEvent.CONNECTION_LOST:
+                Toast.makeText(this,
+                        getResources().getString(R.string.device_connection_lost, device.getDeviceName()),
+                        Toast.LENGTH_SHORT).show();
+                break;
         }
     }
 

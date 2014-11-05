@@ -3,37 +3,40 @@ package in.konstant.sensors;
 import java.util.ArrayList;
 
 public abstract class SensorDevice {
+
+    public static final class EVENT {
+        public static final int DISCONNECTED = 0;
+        public static final int CONNECTION_LOST = 1;
+        public static final int CONNECTION_FAILED = 2;
+        public static final int CONNECTING = 3;
+        public static final int CONNECTED = 4;
+    }
+
     protected String mAddress;
     protected String mDeviceName;
-
-    protected int mConnectionState = STATE.DISCONNECTED;
+    protected boolean mConnected = false;
 
     protected ArrayList<Sensor> mSensors;
-    protected ArrayList<SensorDeviceStateListener> mStateListeners;
-
-    public static final class STATE {
-        public static final int DISCONNECTED = -1;
-        public static final int CONNECTING = 0;
-        public static final int CONNECTED = 1;
-    }
+    protected ArrayList<SensorDeviceEventListener> mStateListeners;
 
     public SensorDevice(final String address) {
         this.mAddress = address;
         mSensors = new ArrayList<Sensor>();
-        mStateListeners = new ArrayList<SensorDeviceStateListener>();
+        mStateListeners = new ArrayList<SensorDeviceEventListener>();
     }
 
-    public boolean registerStateListener(final SensorDeviceStateListener listener) {
+    public boolean registerStateListener(final SensorDeviceEventListener listener) {
         return mStateListeners.add(listener);
     }
 
-    public boolean unregisterStateListener(final SensorDeviceStateListener listener) {
+    public boolean unregisterStateListener(final SensorDeviceEventListener listener) {
         return mStateListeners.remove(listener);
     }
 
-    protected void onSensorDeviceStateChange() {
-        for (SensorDeviceStateListener listener : mStateListeners) {
-            listener.onSensorDeviceStateChange(this, mConnectionState);
+    protected void notifySensorDeviceEvent(final int event) {
+        for (SensorDeviceEventListener listener : mStateListeners) {
+            // Translating BTEvent to SensorEvent
+            listener.onSensorDeviceEvent(this, event);
         }
     }
 
@@ -42,12 +45,8 @@ public abstract class SensorDevice {
     public abstract void disconnect();
     public abstract boolean quit();
 
-    public int getConnectionState() {
-        return mConnectionState;
-    }
-
     public boolean isConnected() {
-        return (mConnectionState == STATE.CONNECTED);
+        return mConnected;
     }
 
     abstract String getBluetoothName();

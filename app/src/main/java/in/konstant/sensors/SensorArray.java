@@ -1,17 +1,22 @@
 package in.konstant.sensors;
 
 import android.content.Context;
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Observable;
 
 public class SensorArray
         extends Observable
-        implements SensorDeviceStateListener {
+        implements SensorDeviceEventListener {
+
+    private final static String TAG = "SensorArray";
+    private final static boolean DBG = true;
 
     private static SensorArray instance;
 
-    private ArrayList<SensorArrayStateListener> mStateListeners;
+    private ArrayList<SensorArrayEventListener> mStateListeners;
 
     private ArrayList<String> ids;
     private HashMap<String, SensorDevice> devices;
@@ -19,7 +24,7 @@ public class SensorArray
     private SensorArray() {
         devices = new HashMap<String, SensorDevice>();
         ids = new ArrayList<String>();
-        mStateListeners = new ArrayList<SensorArrayStateListener>();
+        mStateListeners = new ArrayList<SensorArrayEventListener>();
     }
 
     public static SensorArray getInstance() {
@@ -29,23 +34,25 @@ public class SensorArray
         return instance;
     }
 
-    public boolean registerStateListener(SensorArrayStateListener listener) {
+    public boolean registerStateListener(SensorArrayEventListener listener) {
+        if (DBG) Log.d(TAG, "registerStateListener");
         return mStateListeners.add(listener);
     }
 
-    public boolean unregisterStateListener(SensorArrayStateListener listener) {
+    public boolean unregisterStateListener(SensorArrayEventListener listener) {
+        if (DBG) Log.d(TAG, "unregisterStateListener");
         return mStateListeners.remove(listener);
     }
 
-    private void onSensorDeviceAdd(final SensorDevice device) {
-        for (SensorArrayStateListener listener : mStateListeners) {
-            listener.onSensorDeviceAdd(device);
+    private void notifySensorArrayEvent(final SensorDevice device, final int event) {
+        for (SensorArrayEventListener listener : mStateListeners) {
+            listener.onSensorArrayEvent(device, event);
         }
     }
 
-    public void onSensorDeviceStateChange(final SensorDevice device, final int state) {
+    public void onSensorDeviceEvent(final SensorDevice device, final int event) {
         // Connection State of a SensorDevice has changed
-
+        notifySensorArrayEvent(device, event);
 
         // Notify Observers to initiate redrawing of lists
         changed();
@@ -67,33 +74,47 @@ public class SensorArray
     }
 
     public void removeDevice(final String address) {
+        SensorDevice device = devices.get(address);
+
+        device.unregisterStateListener(this);
+        notifySensorArrayEvent(device, SensorEvent.REMOVED);
+
         devices.remove(address);
         ids.remove(ids.indexOf(address));
+
         changed();
     }
 
     public void removeDevice(final int id) {
+        SensorDevice device = devices.get(ids.get(id));
+
+        device.unregisterStateListener(this);
+        notifySensorArrayEvent(device, SensorEvent.REMOVED);
+
         devices.remove(ids.get(id));
         ids.remove(id);
+
         changed();
     }
 
     public void addDevice(final SensorDevice device) {
         devices.put(device.getBluetoothAddress(), device);
         ids.add(device.getBluetoothAddress());
+
+        device.registerStateListener(this);
+        notifySensorArrayEvent(device, SensorEvent.ADDED);
+
         changed();
     }
 
     public void addDevice(final String address) {
         addDevice(new ExternalSensorDevice(address));
-        changed();
     }
 
     public void addDevice(final String address, final String name) {
         SensorDevice newDevice = new ExternalSensorDevice(address);
         newDevice.setDeviceName(name);
         addDevice(newDevice);
-        changed();
     }
 
     public boolean containsDevice(final String address) {
