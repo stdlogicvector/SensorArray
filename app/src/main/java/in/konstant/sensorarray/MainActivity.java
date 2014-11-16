@@ -186,39 +186,40 @@ public class MainActivity extends Activity
     }
 
     public void onSensorArrayEvent(final SensorDevice device, final int event) {
+        Log.d("MainActiviy", "onSensorArrayEvent(" + event + ")");
         switch (event) {
             case SensorEvent.ADDED:
-                Toast.makeText(this,
-                               getResources().getString(R.string.device_added, device.getDeviceName()),
-                               Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,
+                        getResources().getString(R.string.device_added, device.getDeviceName()),
+                        Toast.LENGTH_SHORT).show();
                 break;
             case SensorEvent.REMOVED:
-                Toast.makeText(this,
+                Toast.makeText(MainActivity.this,
                         getResources().getString(R.string.device_removed, device.getDeviceName()),
                         Toast.LENGTH_SHORT).show();
                 break;
             case SensorEvent.CONNECTED:
-                Toast.makeText(this,
+                Toast.makeText(MainActivity.this,
                         getResources().getString(R.string.device_connected, device.getDeviceName()),
                         Toast.LENGTH_SHORT).show();
                 break;
             case SensorEvent.CONNECTING:
-                Toast.makeText(this,
+                Toast.makeText(MainActivity.this,
                         getResources().getString(R.string.device_connecting, device.getDeviceName()),
                         Toast.LENGTH_SHORT).show();
                 break;
             case SensorEvent.DISCONNECTED:
-                Toast.makeText(this,
+                Toast.makeText(MainActivity.this,
                         getResources().getString(R.string.device_disconnected, device.getDeviceName()),
                         Toast.LENGTH_SHORT).show();
                 break;
             case SensorEvent.CONNECTION_FAILED:
-                Toast.makeText(this,
+                Toast.makeText(MainActivity.this,
                         getResources().getString(R.string.device_connection_failed, device.getDeviceName()),
                         Toast.LENGTH_SHORT).show();
                 break;
             case SensorEvent.CONNECTION_LOST:
-                Toast.makeText(this,
+                Toast.makeText(MainActivity.this,
                         getResources().getString(R.string.device_connection_lost, device.getDeviceName()),
                         Toast.LENGTH_SHORT).show();
                 break;

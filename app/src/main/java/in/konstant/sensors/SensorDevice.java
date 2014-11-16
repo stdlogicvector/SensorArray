@@ -4,14 +4,6 @@ import java.util.ArrayList;
 
 public abstract class SensorDevice {
 
-    public static final class EVENT {
-        public static final int DISCONNECTED = 0;
-        public static final int CONNECTION_LOST = 1;
-        public static final int CONNECTION_FAILED = 2;
-        public static final int CONNECTING = 3;
-        public static final int CONNECTED = 4;
-    }
-
     protected String mAddress;
     protected String mDeviceName;
     protected boolean mConnected = false;
@@ -35,7 +27,6 @@ public abstract class SensorDevice {
 
     protected void notifySensorDeviceEvent(final int event) {
         for (SensorDeviceEventListener listener : mStateListeners) {
-            // Translating BTEvent to SensorEvent
             listener.onSensorDeviceEvent(this, event);
         }
     }
