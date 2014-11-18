@@ -345,11 +345,13 @@ public class BTDevice {
             try {
                 mmOutStream.write(buffer);
 
+                /*
                 if (mDataHandler != null) {
                     mDataHandler.sendMessage(
                             mDataHandler.obtainMessage(BTDataEvent.DATA_SENT, buffer)
                     );
                 }
+                */
 
             } catch (IOException e) {
                 if (DBG) Log.d(TAG, "ConnectedThread write() outStream write() failed", e);

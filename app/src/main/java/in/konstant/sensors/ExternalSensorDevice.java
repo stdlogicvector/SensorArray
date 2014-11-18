@@ -21,16 +21,28 @@ public class ExternalSensorDevice
         btDevice = new BTDevice(mAddress);
         btDevice.setStateHandler(BTStateHandler);
 
-        CommandHandler = new SensorCommandHandler();
+        CommandHandler = new SensorCommandHandler(btDevice);
         CommandHandler.start();
-
         CommandHandler.waitUntilReady();
-        CommandHandler.setReplyHandler(CommandReplyHandler);
-        btDevice.setDataHandler(CommandHandler.getDataHandler());
     }
 
     public boolean initialize() {
+        if (DBG) Log.d(TAG, "initialize()");
         if (mConnected) {
+            Runnable initializer = new Runnable() {
+                @Override
+                public void run() {
+                    android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+
+                    String cmd = SensorCommandHandler.buildCommand('a');
+                    String reply = CommandHandler.sendCommand(cmd);
+
+                    if (DBG) Log.d(TAG, "reply = " + reply);
+                }
+            };
+
+            new Thread(initializer).start();
+
             return true;
         } else {
             return false;
@@ -55,13 +67,6 @@ public class ExternalSensorDevice
         return btDevice.getName();
     }
 
-    private final Handler CommandReplyHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-
-        }
-    };
-
     private final Handler BTStateHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -70,18 +75,24 @@ public class ExternalSensorDevice
             // Translating BTEvent to SensorEvent
             switch (msg.what) {
                 case BTDevice.BTStateEvent.CONNECTED:
+                    mConnected = true;
                     notifySensorDeviceEvent(SensorEvent.CONNECTED);
+                    initialize();
                     break;
                 case BTDevice.BTStateEvent.DISCONNECTED:
+                    mConnected = false;
                     notifySensorDeviceEvent(SensorEvent.DISCONNECTED);
                     break;
                 case BTDevice.BTStateEvent.CONNECTING:
+                    mConnected = false;
                     notifySensorDeviceEvent(SensorEvent.CONNECTING);
                     break;
                 case BTDevice.BTStateEvent.CONNECTION_FAILED:
+                    mConnected = false;
                     notifySensorDeviceEvent(SensorEvent.CONNECTION_FAILED);
                     break;
                 case BTDevice.BTStateEvent.CONNECTION_LOST:
+                    mConnected = false;
                     notifySensorDeviceEvent(SensorEvent.CONNECTION_LOST);
                     break;
             }
