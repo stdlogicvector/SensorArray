@@ -23,7 +23,6 @@ public class ExternalSensorDevice
 
         CommandHandler = new SensorCommandHandler(btDevice);
         CommandHandler.start();
-        CommandHandler.waitUntilReady();
     }
 
     public boolean initialize() {
@@ -34,10 +33,25 @@ public class ExternalSensorDevice
                 public void run() {
                     android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 
-                    String cmd = SensorCommandHandler.buildCommand('a');
-                    String reply = CommandHandler.sendCommand(cmd);
+                    int nrOfSensors = CommandHandler.getNrOfSensors();
 
-                    if (DBG) Log.d(TAG, "reply = " + reply);
+                    for (int sID = 0; sID < nrOfSensors; ++sID) {
+                        ExternalSensor sensor = CommandHandler.getSensor(sID);
+
+                        if (sensor != null) {
+
+                            /*
+                            int nrOfMeasurements = CommandHandler.getNrOfMeasurements(sID);
+
+                            for (int mID = 0; mID < nrOfMeasurements; ++mID) {
+                                sensor.addMeasurement(CommandHandler.getMeasurement(sID, mID));
+                            }
+                            */
+
+
+                            mSensors.add(sensor);
+                        }
+                    }
                 }
             };
 

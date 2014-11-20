@@ -2,13 +2,16 @@ package in.konstant.sensors;
 
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+
+import java.util.ArrayList;
 
 import in.konstant.BT.BTDevice;
 
 public class SensorCommandHandler
-            extends HandlerThread {
+            extends Thread {
 
     private final static String TAG = "SensorCommandHandler";
     private final static boolean DBG = true;
@@ -17,21 +20,23 @@ public class SensorCommandHandler
     private static final char CMD_DELIMITER  = '|';
     private static final char CMD_END_CHAR   = '}';
 
-    public static final class CMD {
-        public static final char GET_NO_SENSORS = 'a';
-        public static final char GET_SENSOR_INFO = 'b';
-        public static final char GET_SENSOR_MEAS_INFO = 'c';
-        public static final char GET_SENSOR_MEAS = 'd';
-
-        public static final char SET_SENSOR_RANGE = 'e';
-        public static final char SET_SENSOR_OFF = 'f';
-        public static final char SET_SENSOR_ON = 'g';
+    private static final class CMD {
+        public static final char GET_NO_SENSORS         = 'a';
+        public static final char GET_SENSOR_INFO        = 'b';
+        public static final char GET_NO_MEAS            = 'c';
+        public static final char GET_SENSOR_MEAS_INFO   = 'd';
+        public static final char GET_SENSOR_MEAS        = 'e';
+        public static final char SET_SENSOR_RANGE       = 'f';
+        public static final char SET_SENSOR_OFF         = 'g';
+        public static final char SET_SENSOR_ON          = 'h';
     }
 
     private Handler inHandler;
 
     private String command;
     private StringBuilder reply;
+    private ArrayList<String> arguments;
+
     private Boolean commandToSend;
     private Boolean replyReceived;
 
@@ -41,9 +46,12 @@ public class SensorCommandHandler
     private BTDevice btDevice;
 
     public SensorCommandHandler(final BTDevice btDevice) {
-        super("SensorCommandHandler", HandlerThread.NORM_PRIORITY);
+        setPriority(Thread.NORM_PRIORITY);
 
         this.btDevice = btDevice;
+
+        inHandler = new Handler(Looper.getMainLooper(), handleInMessage);
+        btDevice.setDataHandler(inHandler);
 
         commandToSend = false;
         replyReceived = false;
@@ -52,16 +60,12 @@ public class SensorCommandHandler
         replyMonitor = new Object();
 
         reply = new StringBuilder();
+        arguments = new ArrayList<String>();
     }
 
-    public synchronized void waitUntilReady() {
-        // getLooper blocks until Looper is prepared
-        inHandler = new Handler(getLooper(), handleInMessage);
+    public String[] sendCommand(final String command) {
+        if (DBG) Log.d(TAG, "sendCommand(" + command + ")");
 
-        btDevice.setDataHandler(inHandler);
-    }
-
-    public String sendCommand(final String command) {
         this.command = command;
 
         synchronized (commandMonitor) {
@@ -77,15 +81,14 @@ public class SensorCommandHandler
                 return null;
             }
 
-            return reply.toString();
+            replyReceived = false;
         }
+
+        return arguments.toArray(new String[arguments.size()]);
     }
 
     @Override
     public void run() {
-        super.run(); //TODO: Blocks :(
-        if (DBG) Log.d(TAG, "running...");
-
         while (!isInterrupted()) {
             synchronized (commandMonitor) {
                 try {
@@ -93,6 +96,8 @@ public class SensorCommandHandler
                         commandMonitor.wait();
 
                     btDevice.send(command.getBytes());
+
+                    commandToSend = false;
 
                 } catch (InterruptedException e) {
 
@@ -105,9 +110,11 @@ public class SensorCommandHandler
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == BTDevice.BTDataEvent.DATA_RECEIVED) {
-                if (DBG) Log.d(TAG, "received = " + (byte[]) msg.obj);
+
+                byte[] data = (byte[]) msg.obj;
+
                 // When new data has been received, pass it to the parser
-                if (parse((byte[])msg.obj)) {
+                if (parse(data)) {
                     // When the Parser has found the Stop-Char
                     synchronized (replyMonitor) {
                         // Notify about completed reply reception
@@ -124,14 +131,21 @@ public class SensorCommandHandler
         for (int b = 0; b < data.length && data[b] != 0; ++b) {
             switch (data[b]) {
                 case CMD_START_CHAR:
+                    arguments.clear();
+                    reply.setLength(0);
+                    break;
+
+                case CMD_DELIMITER:
+                    arguments.add(reply.toString());
                     reply.setLength(0);
                     break;
 
                 default:
-                    reply.append(data[b]);
+                    reply.append((char)data[b]);
                     break;
 
                 case CMD_END_CHAR:
+                    arguments.add(reply.toString());
                     return true;
             }
             data[b] = 0;
@@ -139,19 +153,61 @@ public class SensorCommandHandler
         return false;
     }
 
-    public static String buildCommand(final char id) {
-        return buildCommand(id, '\0', '\0', '\0');
+//--------------------------------------------
+
+    public int getNrOfSensors() {
+        String cmd = buildCommand(CMD.GET_NO_SENSORS, '\0', '\0', '\0');
+        String[] result = sendCommand(cmd);
+
+        if (result[0].equals("" + CMD.GET_NO_SENSORS)) {
+            return Integer.parseInt(result[1]);
+        } else
+            return 0;
     }
 
-    public static String buildCommand(final char id, final char arg1) {
-        return buildCommand(id, arg1, '\0', '\0');
+    public ExternalSensor getSensor(final int sensorId) {
+        String cmd = buildCommand(CMD.GET_SENSOR_INFO, Character.forDigit(sensorId, 10), '\0', '\0');
+        String[] result = sendCommand(cmd);
+
+        if (result[0].equals("" + CMD.GET_SENSOR_INFO)) {
+            return new ExternalSensor(
+                        Integer.parseInt(result[1]),
+                        result[2],
+                        result[3]);
+        } else
+            return null;
     }
 
-    public static String buildCommand(final char id, final char arg1, final char arg2) {
-        return buildCommand(id, arg1, arg2, '\0');
+    public int getNrOfMeasurements(final int sensorId) {
+        String cmd = buildCommand(CMD.GET_NO_MEAS, Character.forDigit(sensorId, 10), '\0', '\0');
+        String[] result = sendCommand(cmd);
+
+        if (result[0].equals("" + CMD.GET_NO_MEAS)) {
+            return Integer.parseInt(result[1]);
+        } else
+            return 0;
     }
 
-    public static String buildCommand(final char id, final char arg1, final char arg2, final char arg3) {
+    public Measurement getMeasurement(final int sensorId, final int measurementId) {
+        String cmd = buildCommand(CMD.GET_SENSOR_MEAS_INFO,
+                                  Character.forDigit(sensorId, 10),
+                                  Character.forDigit(measurementId, 10),
+                                  '\0');
+
+        String[] result = sendCommand(cmd);
+
+        if (result[0].equals("" + CMD.GET_SENSOR_MEAS_INFO )) {
+//            return new Measurement();
+            //TODO: Create Measurement
+            return null;
+        } else
+            return null;
+    }
+
+
+//--------------------------------------------
+
+    private static String buildCommand(final char id, final char arg1, final char arg2, final char arg3) {
         StringBuilder cmd = new StringBuilder();
 
         cmd.append(CMD_START_CHAR);
@@ -173,7 +229,7 @@ public class SensorCommandHandler
         }
 
         cmd.append(CMD_END_CHAR);
-        cmd.append(10);
+        cmd.append(' ');
 
         return cmd.toString();
     }

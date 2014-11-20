@@ -9,4 +9,6 @@ public class SensorEvent {
 
     public static final int ADDED = 10;
     public static final int REMOVED = 11;
+
+    public static final int INITIALIZED = 20;
 }
