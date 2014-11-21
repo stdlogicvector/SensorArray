@@ -1,7 +1,6 @@
 package in.konstant.sensors;
 
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
@@ -22,10 +21,10 @@ public class SensorCommandHandler
 
     private static final class CMD {
         public static final char GET_NO_SENSORS         = 'a';
-        public static final char GET_SENSOR_INFO        = 'b';
+        public static final char GET_SENSOR             = 'b';
         public static final char GET_NO_MEAS            = 'c';
-        public static final char GET_SENSOR_MEAS_INFO   = 'd';
-        public static final char GET_SENSOR_MEAS        = 'e';
+        public static final char GET_SENSOR_MEAS        = 'd';
+        public static final char GET_SENSOR_VALUE       = 'e';
         public static final char SET_SENSOR_RANGE       = 'f';
         public static final char SET_SENSOR_OFF         = 'g';
         public static final char SET_SENSOR_ON          = 'h';
@@ -166,20 +165,23 @@ public class SensorCommandHandler
     }
 
     public ExternalSensor getSensor(final int sensorId) {
-        String cmd = buildCommand(CMD.GET_SENSOR_INFO, Character.forDigit(sensorId, 10), '\0', '\0');
+        String cmd = buildCommand(CMD.GET_SENSOR, (char)(sensorId + '0'), '\0', '\0');
         String[] result = sendCommand(cmd);
 
-        if (result[0].equals("" + CMD.GET_SENSOR_INFO)) {
+        if (DBG) Log.d(TAG, result[0] + " " + result[1] + " " +  result[2] + " " + result[3] + " " + result[4]);
+
+        if (result[0].equals("" + CMD.GET_SENSOR)) {
             return new ExternalSensor(
-                        Integer.parseInt(result[1]),
-                        result[2],
-                        result[3]);
+                        (int)(result[1].charAt(0)) - 48,
+                        Type.fromInteger((int)(result[2].charAt(0)) - 48),
+                        result[3],
+                        result[4]);
         } else
             return null;
     }
 
     public int getNrOfMeasurements(final int sensorId) {
-        String cmd = buildCommand(CMD.GET_NO_MEAS, Character.forDigit(sensorId, 10), '\0', '\0');
+        String cmd = buildCommand(CMD.GET_NO_MEAS, (char)(sensorId + '0'), '\0', '\0');
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_NO_MEAS)) {
@@ -189,21 +191,43 @@ public class SensorCommandHandler
     }
 
     public Measurement getMeasurement(final int sensorId, final int measurementId) {
-        String cmd = buildCommand(CMD.GET_SENSOR_MEAS_INFO,
-                                  Character.forDigit(sensorId, 10),
-                                  Character.forDigit(measurementId, 10),
+        String cmd = buildCommand(CMD.GET_SENSOR_MEAS,
+                                  (char)(sensorId + '0'),
+                                  (char)(measurementId + '0'),
                                   '\0');
 
         String[] result = sendCommand(cmd);
 
-        if (result[0].equals("" + CMD.GET_SENSOR_MEAS_INFO )) {
-//            return new Measurement();
-            //TODO: Create Measurement
-            return null;
+        if (result[0].equals("" + CMD.GET_SENSOR_MEAS)) {
+
+            Unit unit = new Unit(
+                    result[6],
+                    result[7],
+                    Prefix.fromInteger(Integer.parseInt(result[8])),
+                    Subunit.fromString(result[9]));
+
+            ArrayList<Range> ranges = new ArrayList<Range>();
+
+            for (int r = 0; r < Integer.parseInt(result[10]); ++r) {
+                Range range = new Range(
+                                  0,    // result[11 + 3*r]
+                                  10,   // result[12 + 3*r]
+                                  Integer.parseInt(result[13 + 3*r])
+                );
+
+                ranges.add(range);
+            }
+
+            return new Measurement(
+                    result[3],
+                    Integer.parseInt(result[4]),
+                    Integer.parseInt(result[5]),
+                    ranges.toArray(new Range[ranges.size()]),
+                    unit
+                    );
         } else
             return null;
     }
-
 
 //--------------------------------------------
 
@@ -229,7 +253,7 @@ public class SensorCommandHandler
         }
 
         cmd.append(CMD_END_CHAR);
-        cmd.append(' ');
+        cmd.append('\r');
 
         return cmd.toString();
     }

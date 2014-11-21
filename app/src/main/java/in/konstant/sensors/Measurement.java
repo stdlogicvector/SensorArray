@@ -9,7 +9,7 @@ public class Measurement {
 
     private int currentRange;       // Currently active range
 
-    public Measurement(String name, int size, Range[] ranges, Unit unit, int minDelay) {
+    public Measurement(final String name, final int size, final int minDelay, final Range[] ranges, final Unit unit) {
         this.name = name;
         this.size = size;
         this.ranges = ranges;
@@ -19,7 +19,7 @@ public class Measurement {
         this.currentRange = 0;
     }
 
-    public void setRange(int range) {
+    public void setRange(final int range) {
         if (range >= 0 && range < ranges.length) {
             currentRange = range;
         }
@@ -33,7 +33,7 @@ public class Measurement {
         return size;
     }
 
-    public Range getRange(int id) {
+    public Range getRange(final int id) {
         return ranges[id];
     }
 

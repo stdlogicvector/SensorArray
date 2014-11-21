@@ -31,4 +31,10 @@ public enum Prefix {
     public String toSymbol() {
         return this.symbol;
     }
+
+    private static final Prefix[] enumValues = Prefix.values();
+
+    public static Prefix fromInteger(final int id) {
+        return enumValues[id];
+    }
 }

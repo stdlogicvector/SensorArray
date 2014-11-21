@@ -186,7 +186,6 @@ public class MainActivity extends Activity
     }
 
     public void onSensorArrayEvent(final SensorDevice device, final int event) {
-        Log.d("MainActiviy", "onSensorArrayEvent(" + event + ")");
         switch (event) {
             case SensorEvent.ADDED:
                 Toast.makeText(MainActivity.this,

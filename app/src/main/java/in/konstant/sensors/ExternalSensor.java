@@ -8,14 +8,13 @@ public class ExternalSensor extends Sensor {
     private final String name;
     private final String part;
 
-    public ExternalSensor(final int id, final String name, final String part) {
+    public ExternalSensor(final int id, final Type type, final String name, final String part) {
         super();
 
         this.id = id;
+        this.type = type;
         this.name = name;
         this.part = part;
-
-        Log.d("ExternalSensor", "Name " + name + " Part " + part);
     }
 
     public String getName() {

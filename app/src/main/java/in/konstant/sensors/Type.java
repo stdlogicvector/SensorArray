@@ -40,4 +40,9 @@ public enum Type {
         return this.iconId;
     }
 
+    private static final Type[] enumValues = Type.values();
+
+    public static Type fromInteger(final int id) {
+        return enumValues[id];
+    }
 }

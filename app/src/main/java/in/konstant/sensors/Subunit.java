@@ -1,10 +1,13 @@
 package in.konstant.sensors;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+
 public class Subunit {
     private final BaseUnit baseunit;
     private final int exponent;
 
-    public Subunit(BaseUnit baseunit, int exponent) {
+    public Subunit(final BaseUnit baseunit, final int exponent) {
         this.baseunit = baseunit;
         this.exponent = exponent;
     }
@@ -42,5 +45,19 @@ public class Subunit {
             default:
                 return (this.baseunit.toString() + "^" + this.exponent);
         }
+    }
+
+    public static Subunit[] fromString(final String unitString) {
+        ArrayList<Subunit> subunits = new ArrayList<Subunit>();
+
+        String[] subUnitString = unitString.split("[;]");
+
+        for (int s = 0; s < subUnitString.length; ++s) {
+            subunits.add(new Subunit(
+                            BaseUnit.fromInteger(subUnitString[s].charAt(0) - '0'),
+                            Integer.parseInt(subUnitString[s].substring(2, 4).trim()))
+            );
+        }
+        return subunits.toArray(new Subunit[subunits.size()]);
     }
 }

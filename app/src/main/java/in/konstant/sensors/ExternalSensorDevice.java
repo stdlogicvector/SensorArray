@@ -39,19 +39,20 @@ public class ExternalSensorDevice
                         ExternalSensor sensor = CommandHandler.getSensor(sID);
 
                         if (sensor != null) {
-
-                            /*
-                            int nrOfMeasurements = CommandHandler.getNrOfMeasurements(sID);
+/*                          int nrOfMeasurements = CommandHandler.getNrOfMeasurements(sID);
 
                             for (int mID = 0; mID < nrOfMeasurements; ++mID) {
-                                sensor.addMeasurement(CommandHandler.getMeasurement(sID, mID));
+                                Measurement measurement = CommandHandler.getMeasurement(sID, mID);
+
+                                if (measurement != null)
+                                    sensor.addMeasurement(measurement);
                             }
-                            */
-
-
+*/
                             mSensors.add(sensor);
                         }
                     }
+                    // TODO: Own handler? For just one message? Better rename Handler?
+                    BTStateHandler.sendEmptyMessage(SensorEvent.INITIALIZED);
                 }
             };
 
@@ -92,6 +93,9 @@ public class ExternalSensorDevice
                     mConnected = true;
                     notifySensorDeviceEvent(SensorEvent.CONNECTED);
                     initialize();
+                    break;
+                case SensorEvent.INITIALIZED:
+                    notifySensorDeviceEvent(SensorEvent.INITIALIZED);
                     break;
                 case BTDevice.BTStateEvent.DISCONNECTED:
                     mConnected = false;

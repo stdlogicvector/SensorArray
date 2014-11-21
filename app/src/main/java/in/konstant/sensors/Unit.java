@@ -6,7 +6,7 @@ public class Unit {
     private final Prefix prefix;
     private final Subunit subunits[];
 
-    public Unit(String name, String symbol, Prefix prefix, Subunit subunits[]) {
+    public Unit(final String name, final String symbol, final Prefix prefix, final Subunit subunits[]) {
         this.name = name;
         this.symbol = symbol;
         this.prefix = prefix;

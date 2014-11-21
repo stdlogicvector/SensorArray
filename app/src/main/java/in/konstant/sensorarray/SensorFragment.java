@@ -51,16 +51,21 @@ public class SensorFragment extends Fragment {
         this.sensorNumber = getArguments().getInt(ARG_SENSOR_NUMBER);
 
         sensorArray = SensorArray.getInstance();
-        sensor = sensorArray.getDevice(deviceNumber).getSensor(sensorNumber);
 
-        ((MainActivity) getActivity()).onFragmentCreated(sensor.getName());
+        if (deviceNumber < sensorArray.count()) {
+            sensor = sensorArray.getDevice(deviceNumber).getSensor(sensorNumber);
+        }
+
+        if (sensor != null)
+            ((MainActivity) getActivity()).onFragmentCreated(sensor.getName());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_sensor, container, false);
 
-        ((TextView)rootView.findViewById(R.id.tvSensorName)).setText(sensor.getName());
+        if (sensor != null)
+            ((TextView)rootView.findViewById(R.id.tvSensorName)).setText(sensor.getName());
 
         return rootView;
     }

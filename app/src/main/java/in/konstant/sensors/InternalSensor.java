@@ -92,17 +92,17 @@ public class InternalSensor
                 mMeasurements.add(new Measurement(
                                 "Angular Rate Vector",
                                 3,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Angular Velocity", "rad/s", Prefix.NO_PREFIX, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Angular Velocity", "rad/s", Prefix.NO_PREFIX, subunits))
                 );
 
                 mMeasurements.add(new Measurement(
                                 "Drift Vector",
                                 3,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Angular Velocity", "rad/s", Prefix.NO_PREFIX, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Angular Velocity", "rad/s", Prefix.NO_PREFIX, subunits))
                 );
             break;
 
@@ -122,17 +122,17 @@ public class InternalSensor
                 mMeasurements.add(new Measurement(
                                 "Magnetic Flux Vector",
                                 3,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Tesla", "T", Prefix.MICRO, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Tesla", "T", Prefix.MICRO, subunits))
                 );
 
                 mMeasurements.add(new Measurement(
                                 "Drift Vector",
                                 3,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Tesla", "T", Prefix.MICRO, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Tesla", "T", Prefix.MICRO, subunits))
                 );
             break;
 
@@ -152,9 +152,9 @@ public class InternalSensor
                 mMeasurements.add(new Measurement(
                                 "Acceleration Vector",
                                 3,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Acceleration", "a", Prefix.NO_PREFIX, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Acceleration", "a", Prefix.NO_PREFIX, subunits))
                 );
             break;
 
@@ -173,9 +173,9 @@ public class InternalSensor
                 mMeasurements.add(new Measurement(
                                 "Magnetic Flux Vector",
                                 3,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Tesla", "T", Prefix.MICRO, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Tesla", "T", Prefix.MICRO, subunits))
                 );
             break;
 
@@ -193,9 +193,9 @@ public class InternalSensor
                 mMeasurements.add(new Measurement(
                                 "Angular Rate Vector",
                                 3,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Angular Velocity", "rad/s", Prefix.NO_PREFIX, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Angular Velocity", "rad/s", Prefix.NO_PREFIX, subunits))
                 );
             break;
 
@@ -213,9 +213,9 @@ public class InternalSensor
                 mMeasurements.add(new Measurement(
                                 "Illuminance",
                                 1,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Lux", "lx", Prefix.NO_PREFIX, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Lux", "lx", Prefix.NO_PREFIX, subunits))
                 );
             break;
 
@@ -232,9 +232,9 @@ public class InternalSensor
                 mMeasurements.add(new Measurement(
                                 "Ambient Temperature",
                                 1,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Celsius", "°C", Prefix.NO_PREFIX, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Celsius", "°C", Prefix.NO_PREFIX, subunits))
                 );
             break;
 
@@ -251,9 +251,9 @@ public class InternalSensor
                 mMeasurements.add(new Measurement(
                                 "Proximity",
                                 1,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Centimeter", "cm", Prefix.CENTI, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Centimeter", "cm", Prefix.CENTI, subunits))
                 );
                 break;
 
@@ -272,9 +272,9 @@ public class InternalSensor
                 mMeasurements.add(new Measurement(
                                 "Atmospheric Pressure",
                                 1,
+                                mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Millibar", "mBar", Prefix.MILLI, subunits),
-                                mSensor.getMinDelay())
+                                new Unit("Millibar", "mBar", Prefix.MILLI, subunits))
                 );
             break;
         }

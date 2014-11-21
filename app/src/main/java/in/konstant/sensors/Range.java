@@ -5,7 +5,7 @@ public class Range {
     private final float max;
     private final int digits;
 
-    public Range(float min, float max, int digits) {
+    public Range(final float min, final float max, final int digits) {
         this.min = min;
         this.max = max;
         this.digits = digits;

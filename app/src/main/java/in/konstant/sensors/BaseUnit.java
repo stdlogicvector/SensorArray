@@ -33,4 +33,10 @@ public enum BaseUnit {
     public String toSymbol() {
         return this.symbol;
     }
+
+    private static final BaseUnit[] enumValues = BaseUnit.values();
+
+    public static BaseUnit fromInteger(final int id) {
+        return enumValues[id];
+    }
 }

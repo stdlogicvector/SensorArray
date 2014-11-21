@@ -131,7 +131,7 @@ public class SensorArrayAdapter
 
         if (item.isConnected()) {
             holder.icSensorDeviceIcon.setImageResource(R.drawable.ic_device_connected);
-            holder.tvSensorDeviceSensors.setText("" + item.getNumberOfSensors());
+            holder.tvSensorDeviceSensors.setText("" + item.getNumberOfSensors()); //TODO: Seems not to work with eSD?
         } else {
             holder.icSensorDeviceIcon.setImageResource(R.drawable.ic_device_disconnected);
             holder.tvSensorDeviceSensors.setVisibility(View.GONE);
