@@ -8,8 +8,7 @@ A common structure with all information is statically stored for each sensor and
 
 Current Status of the App:
 
-![Navigation Drawer](https://raw.github.com/konstantinwerner/SensorArray/screenshots/Screenshot_2014-11-22-19-31-29.png)
-Navigation Drawer
+![Navigation Drawer](https://raw.githubusercontent.com/konstantinwerner/SensorArray/master/screenshots/Screenshot_2014-11-22-19-31-29.png)
 
-![Sensor View](https://raw.github.com/konstantinwerner/SensorArray/screenshots/Screenshot_2014-11-24-19-52-49.png)
-Sensor View (Measurement details not yet implemented)
+![Sensor View](https://raw.github.com/konstantinwerner/SensorArray/master/screenshots/Screenshot_2014-11-24-19-52-49.png)
+(Measurement details not yet implemented)
