@@ -3,6 +3,7 @@
     <string name="device_added">Device %s added</string>
     <string name="device_removed">Device %s removed</string>
     <string name="device_connected">Connected to %s</string>
+    <string name="device_initialized">%s initialized</string>
     <string name="device_connecting">Connecting...</string>
     <string name="device_disconnected">Disconnected from %s</string>
     <string name="device_connection_failed">Connection to %s failed</string>

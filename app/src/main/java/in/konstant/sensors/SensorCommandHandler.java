@@ -63,8 +63,6 @@ public class SensorCommandHandler
     }
 
     public String[] sendCommand(final String command) {
-        if (DBG) Log.d(TAG, "sendCommand(" + command + ")");
-
         this.command = command;
 
         synchronized (commandMonitor) {
@@ -74,8 +72,9 @@ public class SensorCommandHandler
 
         synchronized (replyMonitor) {
             try {
-                while (!replyReceived)
-                    replyMonitor.wait();
+                while (!replyReceived) {
+                    replyMonitor.wait();        //TODO: Timeout (or use Conditions)
+                }
             } catch (InterruptedException e) {
                 return null;
             }
@@ -159,7 +158,7 @@ public class SensorCommandHandler
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_NO_SENSORS)) {
-            return Integer.parseInt(result[1]);
+            return (int)(result[1].charAt(0)) - 48;
         } else
             return 0;
     }
@@ -167,8 +166,6 @@ public class SensorCommandHandler
     public ExternalSensor getSensor(final int sensorId) {
         String cmd = buildCommand(CMD.GET_SENSOR, (char)(sensorId + '0'), '\0', '\0');
         String[] result = sendCommand(cmd);
-
-        if (DBG) Log.d(TAG, result[0] + " " + result[1] + " " +  result[2] + " " + result[3] + " " + result[4]);
 
         if (result[0].equals("" + CMD.GET_SENSOR)) {
             return new ExternalSensor(
@@ -185,7 +182,7 @@ public class SensorCommandHandler
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_NO_MEAS)) {
-            return Integer.parseInt(result[1]);
+            return (int)(result[2].charAt(0)) - 48;
         } else
             return 0;
     }
@@ -203,16 +200,16 @@ public class SensorCommandHandler
             Unit unit = new Unit(
                     result[6],
                     result[7],
-                    Prefix.fromInteger(Integer.parseInt(result[8])),
+                    Prefix.fromInteger((int)(result[8].charAt(0)) - 48),
                     Subunit.fromString(result[9]));
 
             ArrayList<Range> ranges = new ArrayList<Range>();
 
             for (int r = 0; r < Integer.parseInt(result[10]); ++r) {
                 Range range = new Range(
-                                  0,    // result[11 + 3*r]
-                                  10,   // result[12 + 3*r]
-                                  Integer.parseInt(result[13 + 3*r])
+                                  0,    // decode(result[11 + 3*r])
+                                  10,   // decode(result[12 + 3*r])
+                                  (int)(result[13 + 3*r].charAt(0)) - 48
                 );
 
                 ranges.add(range);
@@ -220,8 +217,8 @@ public class SensorCommandHandler
 
             return new Measurement(
                     result[3],
-                    Integer.parseInt(result[4]),
-                    Integer.parseInt(result[5]),
+                    (int)(result[4].charAt(0)) - 48,
+                    100,    // decode(result[5])
                     ranges.toArray(new Range[ranges.size()]),
                     unit
                     );

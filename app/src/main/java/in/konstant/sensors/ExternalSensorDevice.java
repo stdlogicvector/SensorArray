@@ -28,6 +28,9 @@ public class ExternalSensorDevice
     public boolean initialize() {
         if (DBG) Log.d(TAG, "initialize()");
         if (mConnected) {
+
+//            mSensors.clear();
+
             Runnable initializer = new Runnable() {
                 @Override
                 public void run() {
@@ -39,7 +42,7 @@ public class ExternalSensorDevice
                         ExternalSensor sensor = CommandHandler.getSensor(sID);
 
                         if (sensor != null) {
-/*                          int nrOfMeasurements = CommandHandler.getNrOfMeasurements(sID);
+                            int nrOfMeasurements = CommandHandler.getNrOfMeasurements(sID);
 
                             for (int mID = 0; mID < nrOfMeasurements; ++mID) {
                                 Measurement measurement = CommandHandler.getMeasurement(sID, mID);
@@ -47,7 +50,7 @@ public class ExternalSensorDevice
                                 if (measurement != null)
                                     sensor.addMeasurement(measurement);
                             }
-*/
+
                             mSensors.add(sensor);
                         }
                     }
@@ -73,6 +76,7 @@ public class ExternalSensorDevice
     }
 
     public boolean quit() {
+        CommandHandler.interrupt();
         disconnect();
         btDevice.destroy();
         return true;

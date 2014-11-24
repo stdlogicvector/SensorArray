@@ -53,10 +53,15 @@ public class Subunit {
         String[] subUnitString = unitString.split("[;]");
 
         for (int s = 0; s < subUnitString.length; ++s) {
-            subunits.add(new Subunit(
-                            BaseUnit.fromInteger(subUnitString[s].charAt(0) - '0'),
-                            Integer.parseInt(subUnitString[s].substring(2, 4).trim()))
-            );
+            int exponent = Integer.parseInt(subUnitString[s].substring(2, 4).trim());
+
+            if (exponent != 0) {
+                subunits.add(new Subunit(
+                                BaseUnit.fromInteger(subUnitString[s].charAt(0) - '0'),
+                                exponent
+                            )
+                );
+            }
         }
         return subunits.toArray(new Subunit[subunits.size()]);
     }

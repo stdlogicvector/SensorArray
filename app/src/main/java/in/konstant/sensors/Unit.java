@@ -25,23 +25,47 @@ public class Unit {
         return this.prefix;
     }
 
-    @Override
-    public String toString() {
+    public String getSIUnit(final boolean text) {
         StringBuilder num = new StringBuilder();
         StringBuilder den = new StringBuilder();
 
         for (int i = 0; i < this.subunits.length; i++) {
 
             if (this.subunits[i].getExponent() < 0) {
-                den.append(this.subunits[i].toString());
-                den.append(" ");
+                if (text) {
+                    den.append(this.subunits[i].toString());
+                    den.append(" ");
+                } else {
+                    den.append(this.subunits[i].toSymbol());
+                }
             } else if (this.subunits[i].getExponent() > 0)
             {
-                num.append(this.subunits[i].toString());
-                num.append(" ");
+                if (text) {
+                    num.append(this.subunits[i].toString());
+                    num.append(" ");
+                } else {
+                    num.append(this.subunits[i].toSymbol());
+                }
             }
         }
 
-        return (num.toString() + " per " + den.toString());
+        if (text) {
+            return (num.toString() + " per " + den.toString());
+        } else {
+            return ("(" + num.toString() + ")/(" + den.toString() + ")");
+        }
+    }
+
+    @Override
+    public String toString() {
+        return toString(false);
+    }
+
+    public String toString(final boolean text) {
+        if (text) {
+            return this.prefix.toString() + this.name;
+        } else {
+            return this.prefix.toSymbol() + this.symbol;
+        }
     }
 }

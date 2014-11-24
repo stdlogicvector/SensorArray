@@ -202,6 +202,11 @@ public class MainActivity extends Activity
                         getResources().getString(R.string.device_connected, device.getDeviceName()),
                         Toast.LENGTH_SHORT).show();
                 break;
+            case SensorEvent.INITIALIZED:
+                Toast.makeText(MainActivity.this,
+                        getResources().getString(R.string.device_initialized, device.getDeviceName()),
+                        Toast.LENGTH_SHORT).show();
+                break;
             case SensorEvent.CONNECTING:
                 Toast.makeText(MainActivity.this,
                         getResources().getString(R.string.device_connecting, device.getDeviceName()),

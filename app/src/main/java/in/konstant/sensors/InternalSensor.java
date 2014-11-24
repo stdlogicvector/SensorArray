@@ -36,10 +36,6 @@ public class InternalSensor
         return mSensor.getVendor() + " " + mSensor.getName();
     }
 
-    public Measurement getMeasurement(int id) {
-        return mMeasurements.get(id);
-    }
-
     public void activate() {
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_UI);
     }

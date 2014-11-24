@@ -36,11 +36,14 @@ public abstract class Sensor {
 
     public abstract void deactivate();
 
-    abstract Measurement getMeasurement(final int id);
     //    abstract float[] getValue(final int id);
 
     public int getNumberOfMeasurements() {
         return mMeasurements.size();
+    }
+
+    public Measurement getMeasurement(final int id) {
+        return mMeasurements.get(id);
     }
 
     public Type getType() {

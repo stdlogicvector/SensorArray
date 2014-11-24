@@ -2,6 +2,7 @@ package in.konstant.sensors;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -131,7 +132,8 @@ public class SensorArrayAdapter
 
         if (item.isConnected()) {
             holder.icSensorDeviceIcon.setImageResource(R.drawable.ic_device_connected);
-            holder.tvSensorDeviceSensors.setText("" + item.getNumberOfSensors()); //TODO: Seems not to work with eSD?
+            holder.tvSensorDeviceSensors.setVisibility(View.VISIBLE);
+            holder.tvSensorDeviceSensors.setText("" + item.getNumberOfSensors());
         } else {
             holder.icSensorDeviceIcon.setImageResource(R.drawable.ic_device_disconnected);
             holder.tvSensorDeviceSensors.setVisibility(View.GONE);

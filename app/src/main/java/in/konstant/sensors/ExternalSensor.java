@@ -33,10 +33,6 @@ public class ExternalSensor extends Sensor {
 
     }
 
-    Measurement getMeasurement(final int id) {
-        return mMeasurements.get(id);
-    }
-
     public void addMeasurement(final Measurement measurement) {
         mMeasurements.add(measurement);
     }

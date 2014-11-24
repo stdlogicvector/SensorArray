@@ -2,17 +2,20 @@ package in.konstant.sensorarray;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import in.konstant.R;
 import in.konstant.sensors.Sensor;
 import in.konstant.sensors.SensorArray;
 import in.konstant.sensors.SensorArrayAdapter;
+import in.konstant.sensors.SensorDevice;
 
 public class SensorFragment extends Fragment {
 
@@ -20,6 +23,7 @@ public class SensorFragment extends Fragment {
     private static final String ARG_SENSOR_NUMBER = "sensor_number";
 
     private SensorArray sensorArray;
+    private SensorDevice device;
     private Sensor sensor;
 
     private int deviceNumber;
@@ -53,7 +57,10 @@ public class SensorFragment extends Fragment {
         sensorArray = SensorArray.getInstance();
 
         if (deviceNumber < sensorArray.count()) {
-            sensor = sensorArray.getDevice(deviceNumber).getSensor(sensorNumber);
+            device = sensorArray.getDevice(deviceNumber);
+
+            if (sensorNumber < device.getNumberOfSensors())
+                sensor = device.getSensor(sensorNumber);
         }
 
         if (sensor != null)
@@ -64,8 +71,21 @@ public class SensorFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_sensor, container, false);
 
-        if (sensor != null)
-            ((TextView)rootView.findViewById(R.id.tvSensorName)).setText(sensor.getName());
+        if (sensor != null) {
+            if (device.isConnected())
+                ((ImageView) rootView.findViewById(R.id.icSensorDeviceIcon)).setImageResource(R.drawable.ic_device_connected);
+            else
+                ((ImageView) rootView.findViewById(R.id.icSensorDeviceIcon)).setImageResource(R.drawable.ic_device_disconnected);
+
+            ((TextView) rootView.findViewById(R.id.tvDeviceName)).setText(device.getDeviceName());
+            ((TextView) rootView.findViewById(R.id.tvDeviceAddress)).setText(device.getBluetoothAddress());
+            ((TextView) rootView.findViewById(R.id.tvSensorName)).setText(sensor.getName());
+            ((TextView) rootView.findViewById(R.id.tvSensorPart)).setText(sensor.getPart());
+            ((ImageView) rootView.findViewById(R.id.icSensorIcon)).setImageResource(sensor.getType().icon());
+
+
+
+        }
 
         return rootView;
     }
