@@ -25,6 +25,10 @@ public class Unit {
         return this.prefix;
     }
 
+    public boolean noPrefix() {
+        return  (this.prefix == Prefix.NO_PREFIX);
+    }
+
     public String getSIUnit(final boolean text) {
         StringBuilder num = new StringBuilder();
         StringBuilder den = new StringBuilder();

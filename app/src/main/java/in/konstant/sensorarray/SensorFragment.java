@@ -2,19 +2,22 @@ package in.konstant.sensorarray;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.media.Image;
+import android.app.FragmentManager;
 import android.os.Bundle;
-import android.util.Log;
+
+import android.support.v4.view.ViewPager;
+import android.support.v13.app.FragmentPagerAdapter;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import in.konstant.R;
 import in.konstant.sensors.Sensor;
 import in.konstant.sensors.SensorArray;
-import in.konstant.sensors.SensorArrayAdapter;
 import in.konstant.sensors.SensorDevice;
 
 public class SensorFragment extends Fragment {
@@ -28,6 +31,9 @@ public class SensorFragment extends Fragment {
 
     private int deviceNumber;
     private int sensorNumber;
+
+    private MeasurementPagerAdapter mAdapter;
+    private ViewPager mPager;
 
     // Returns a new instance of this fragment for the given sensor
     public static SensorFragment newInstance(int deviceNumber, int sensorNumber) {
@@ -56,15 +62,27 @@ public class SensorFragment extends Fragment {
 
         sensorArray = SensorArray.getInstance();
 
-        if (deviceNumber < sensorArray.count()) {
-            device = sensorArray.getDevice(deviceNumber);
+        if (!(deviceNumber < sensorArray.count()))
+            deviceNumber = 0; // Fall back to Internal Device
 
-            if (sensorNumber < device.getNumberOfSensors())
-                sensor = device.getSensor(sensorNumber);
-        }
+        device = sensorArray.getDevice(deviceNumber);
+
+        if (!(sensorNumber < device.getNumberOfSensors()))
+            sensorNumber = 0; // Fall back to first Sensor
+
+        sensor = device.getSensor(sensorNumber);
 
         if (sensor != null)
             ((MainActivity) getActivity()).onFragmentCreated(sensor.getName());
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        mAdapter = new MeasurementPagerAdapter(getFragmentManager(), deviceNumber, sensorNumber);
+        mPager = (ViewPager) getView().findViewById(R.id.pgSensorMeasurements);
+        mPager.setAdapter(mAdapter);
     }
 
     @Override
@@ -83,10 +101,38 @@ public class SensorFragment extends Fragment {
             ((TextView) rootView.findViewById(R.id.tvSensorPart)).setText(sensor.getPart());
             ((ImageView) rootView.findViewById(R.id.icSensorIcon)).setImageResource(sensor.getType().icon());
 
-
-
         }
 
         return rootView;
+    }
+
+    public static class MeasurementPagerAdapter extends FragmentPagerAdapter {
+
+        private final SensorArray sensorArray;
+        private final int deviceNumber;
+        private final int sensorNumber;
+
+        public MeasurementPagerAdapter(FragmentManager fm,
+                                       int deviceNumber,
+                                       int sensorNumber) {
+            super(fm);
+
+            sensorArray = SensorArray.getInstance();
+
+            this.deviceNumber = deviceNumber;
+            this.sensorNumber = sensorNumber;
+        }
+
+        @Override
+        public Fragment getItem(int num) {
+            return MeasurementFragment.newInstance(deviceNumber, sensorNumber, num);
+
+        }
+
+        @Override
+        public int getCount() {
+            return sensorArray.getDevice(deviceNumber).getSensor(sensorNumber).getNumberOfMeasurements();
+        }
+
     }
 }

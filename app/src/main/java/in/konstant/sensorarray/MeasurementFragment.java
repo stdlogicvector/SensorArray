@@ -62,9 +62,10 @@ public class MeasurementFragment extends Fragment {
                                      .getSensor(sensorNumber)
                                      .getMeasurement(measurementNumber);
         }
-
+/*
         if (measurement != null)
             ((MainActivity) getActivity()).onFragmentCreated(measurement.getName());
+*/
     }
 
     @Override
@@ -72,27 +73,32 @@ public class MeasurementFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_measurement, container, false);
 
         if (measurement != null) {
-            String unitDesc = measurement.getUnit().getPrefix().toString() +
-                              "-" +
-                              measurement.getUnit().getName() +
-                              " (" +
-                              measurement.getUnit().toString() +
-                              ")";
+            String unitDesc = "";
+
+            if (!measurement.getUnit().noPrefix())
+                unitDesc = unitDesc.concat(measurement.getUnit().getPrefix().toString() + "-");
+
+             unitDesc = unitDesc.concat(measurement.getUnit().getName() +
+                                        " (" +
+                                        measurement.getUnit().toString() +
+                                        ")");
 
             String name = measurement.getName();
 
             if (measurement.getSize() > 1)
-                name = name.concat("[" + measurement.getSize() + "]");
+                name = name.concat(" [" + measurement.getSize() + "]");
 
             String range = measurement.getCurrentRange().getMin() +
-                           measurement.getUnit().getPrefix().toString() +
+                           measurement.getUnit().toString() +
                            " - " +
                            measurement.getCurrentRange().getMax() +
-                           measurement.getUnit().getPrefix().toString();
+                           measurement.getUnit().toString();
 
             ((TextView) rootView.findViewById(R.id.tvMeasurementName)).setText(name);
             ((TextView) rootView.findViewById(R.id.tvMeasurementUnitName)).setText(unitDesc);
             ((TextView) rootView.findViewById(R.id.tvMeasurementUnitSubunits)).setText(measurement.getUnit().getSIUnit(false));
+            ((TextView) rootView.findViewById(R.id.tvMeasurementRange)).setText(range);
+
         }
 
         return rootView;
