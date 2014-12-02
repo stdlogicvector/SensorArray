@@ -8,12 +8,15 @@ import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v13.app.FragmentPagerAdapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.HashMap;
 
 import in.konstant.R;
 import in.konstant.sensors.Sensor;
@@ -25,6 +28,8 @@ public class SensorFragment extends Fragment {
     private static final String ARG_DEVICE_NUMBER = "device_number";
     private static final String ARG_SENSOR_NUMBER = "sensor_number";
 
+    private static final HashMap<Integer, SensorFragment> instances = new HashMap<Integer, SensorFragment>();
+
     private SensorArray sensorArray;
     private SensorDevice device;
     private Sensor sensor;
@@ -32,17 +37,31 @@ public class SensorFragment extends Fragment {
     private int deviceNumber;
     private int sensorNumber;
 
+    private int pagerId;
+
     private MeasurementPagerAdapter mAdapter;
     private ViewPager mPager;
 
     // Returns a new instance of this fragment for the given sensor
-    public static SensorFragment newInstance(int deviceNumber, int sensorNumber) {
-        SensorFragment fragment = new SensorFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_DEVICE_NUMBER, deviceNumber);
-        args.putInt(ARG_SENSOR_NUMBER, sensorNumber);
-        fragment.setArguments(args);
-        return fragment;
+    public static synchronized SensorFragment getInstance(int deviceNumber, int sensorNumber) {
+        Integer key = (deviceNumber << 16) + (sensorNumber << 8);
+
+        Log.d("SensorFragment", "getInstance " + deviceNumber + " " + sensorNumber);
+
+        SensorFragment instance = instances.get(key);
+
+        if (instance == null) {
+            instance = new SensorFragment();
+
+            Bundle args = new Bundle();
+            args.putInt(ARG_DEVICE_NUMBER, deviceNumber);
+            args.putInt(ARG_SENSOR_NUMBER, sensorNumber);
+            instance.setArguments(args);
+
+            instances.put(key, instance);
+        }
+
+        return instance;
     }
 
     public SensorFragment() {
@@ -72,22 +91,29 @@ public class SensorFragment extends Fragment {
 
         sensor = device.getSensor(sensorNumber);
 
+        pagerId = (deviceNumber << 8) + sensorNumber;
+
+        mAdapter = new MeasurementPagerAdapter(getFragmentManager(), deviceNumber, sensorNumber);
+
         if (sensor != null)
             ((MainActivity) getActivity()).onFragmentCreated(sensor.getName());
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        Log.d("SensorFragment", "onActivityCreated()");
+
         super.onActivityCreated(savedInstanceState);
 
-        mAdapter = new MeasurementPagerAdapter(getFragmentManager(), deviceNumber, sensorNumber);
-        mPager = (ViewPager) getView().findViewById(R.id.pgSensorMeasurements);
+        mPager = (ViewPager) getView().findViewById(pagerId);
         mPager.setAdapter(mAdapter);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_sensor, container, false);
+
+        Log.d("SensorFragment", "onCreateView()");
 
         if (sensor != null) {
             if (device.isConnected())
@@ -101,6 +127,7 @@ public class SensorFragment extends Fragment {
             ((TextView) rootView.findViewById(R.id.tvSensorPart)).setText(sensor.getPart());
             ((ImageView) rootView.findViewById(R.id.icSensorIcon)).setImageResource(sensor.getType().icon());
 
+            ((ViewPager) rootView.findViewById(R.id.pgSensorMeasurements)).setId(pagerId);
         }
 
         return rootView;
@@ -117,6 +144,8 @@ public class SensorFragment extends Fragment {
                                        int sensorNumber) {
             super(fm);
 
+            Log.d("MeasurementPagerAdapter", "new " + deviceNumber + " " + sensorNumber);
+
             sensorArray = SensorArray.getInstance();
 
             this.deviceNumber = deviceNumber;
@@ -125,8 +154,8 @@ public class SensorFragment extends Fragment {
 
         @Override
         public Fragment getItem(int num) {
-            return MeasurementFragment.newInstance(deviceNumber, sensorNumber, num);
-
+            Log.d("MeasurementPagerAdapter", "getItem " + deviceNumber + " " + sensorNumber + " " + num);
+            return MeasurementFragment.getInstance(deviceNumber, sensorNumber, num);
         }
 
         @Override

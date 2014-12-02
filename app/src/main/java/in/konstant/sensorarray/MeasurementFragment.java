@@ -4,10 +4,15 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.v4.widget.ResourceCursorAdapter;
+import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import java.util.HashMap;
 
 import in.konstant.R;
 import in.konstant.sensors.Measurement;
@@ -20,6 +25,8 @@ public class MeasurementFragment extends Fragment {
     private static final String ARG_SENSOR_NUMBER = "sensor_number";
     private static final String ARG_MEASUREMENT_NUMBER = "measurement_number";
 
+    private static final HashMap<Integer, MeasurementFragment> instances = new HashMap<Integer, MeasurementFragment>();
+
     private SensorArray sensorArray;
     private Measurement measurement;
 
@@ -28,14 +35,25 @@ public class MeasurementFragment extends Fragment {
     private int measurementNumber;
 
     // Returns a new instance of this fragment for the given sensor
-    public static MeasurementFragment newInstance(int deviceNumber, int sensorNumber, int measurementNumber) {
-        MeasurementFragment fragment = new MeasurementFragment();
-        Bundle args = new Bundle();
-        args.putInt(ARG_DEVICE_NUMBER, deviceNumber);
-        args.putInt(ARG_SENSOR_NUMBER, sensorNumber);
-        args.putInt(ARG_MEASUREMENT_NUMBER, measurementNumber);
-        fragment.setArguments(args);
-        return fragment;
+    public static MeasurementFragment getInstance(int deviceNumber, int sensorNumber, int measurementNumber) {
+        Integer key = (deviceNumber << 16) + (sensorNumber << 8) + measurementNumber;
+
+        Log.d("MeasurementFragment", "new " + deviceNumber + ' ' + sensorNumber + ' ' + measurementNumber + " " + key);
+
+        MeasurementFragment instance = instances.get(key);
+
+        if (instance == null) {
+            instance = new MeasurementFragment();
+            Bundle args = new Bundle();
+            args.putInt(ARG_DEVICE_NUMBER, deviceNumber);
+            args.putInt(ARG_SENSOR_NUMBER, sensorNumber);
+            args.putInt(ARG_MEASUREMENT_NUMBER, measurementNumber);
+            instance.setArguments(args);
+
+            instances.put(key, instance);
+        }
+
+        return instance;
     }
 
     public MeasurementFragment() {
@@ -73,22 +91,27 @@ public class MeasurementFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_measurement, container, false);
 
         if (measurement != null) {
-            String unitDesc = "";
+            String unitDesc = getResources().getString(R.string.MeasurementFragmentUnitName);
 
             if (!measurement.getUnit().noPrefix())
                 unitDesc = unitDesc.concat(measurement.getUnit().getPrefix().toString() + "-");
 
-             unitDesc = unitDesc.concat(measurement.getUnit().getName() +
-                                        " (" +
-                                        measurement.getUnit().toString() +
-                                        ")");
+            unitDesc = unitDesc.concat(measurement.getUnit().getName() +
+                       " (" +
+                       measurement.getUnit().toString() +
+                       ")");
 
             String name = measurement.getName();
 
             if (measurement.getSize() > 1)
                 name = name.concat(" [" + measurement.getSize() + "]");
 
-            String range = measurement.getCurrentRange().getMin() +
+            String SIunit = getResources().getString(R.string.MeasurementFragmentUnitSI) +
+                            measurement.getUnit().getSIUnit(false);
+
+            //TODO: Display range with correct amount of digit precision
+            String range = getResources().getString(R.string.MeasurementFragmentRange) +
+                           measurement.getCurrentRange().getMin() +
                            measurement.getUnit().toString() +
                            " - " +
                            measurement.getCurrentRange().getMax() +
@@ -96,9 +119,8 @@ public class MeasurementFragment extends Fragment {
 
             ((TextView) rootView.findViewById(R.id.tvMeasurementName)).setText(name);
             ((TextView) rootView.findViewById(R.id.tvMeasurementUnitName)).setText(unitDesc);
-            ((TextView) rootView.findViewById(R.id.tvMeasurementUnitSubunits)).setText(measurement.getUnit().getSIUnit(false));
+            ((TextView) rootView.findViewById(R.id.tvMeasurementUnitSubunits)).setText(SIunit);
             ((TextView) rootView.findViewById(R.id.tvMeasurementRange)).setText(range);
-
         }
 
         return rootView;

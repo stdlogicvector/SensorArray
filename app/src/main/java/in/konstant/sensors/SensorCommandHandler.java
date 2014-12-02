@@ -207,8 +207,8 @@ public class SensorCommandHandler
 
             for (int r = 0; r < Integer.parseInt(result[10]); ++r) {
                 Range range = new Range(
-                                  0,    // decode(result[11 + 3*r])
-                                  10,   // decode(result[12 + 3*r])
+                                  ASCII85.decodeToFloat(result[11 + 3*r]),
+                                  ASCII85.decodeToFloat(result[12 + 3*r]),
                                   (int)(result[13 + 3*r].charAt(0)) - 48
                 );
 
@@ -218,13 +218,17 @@ public class SensorCommandHandler
             return new Measurement(
                     result[3],
                     (int)(result[4].charAt(0)) - 48,
-                    100,    // decode(result[5])
+                    ASCII85.decodeToInt(result[5]),
                     ranges.toArray(new Range[ranges.size()]),
                     unit
                     );
         } else
             return null;
     }
+
+    //TODO: Implement getSensorValue()
+
+    //TODO: Implement getSensorRange()
 
 //--------------------------------------------
 

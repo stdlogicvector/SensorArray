@@ -1,5 +1,9 @@
 package in.konstant.sensors;
 
+import android.text.Html;
+import android.text.Spannable;
+import android.text.Spanned;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -31,6 +35,10 @@ public class Subunit {
             default:
                 return (baseunit.toSymbol() + "^" + exponent);
         }
+    }
+
+    public Spanned toFormattedSymbol() {
+        return Html.fromHtml(baseunit.toSymbol() + "<sup><small>" + exponent + "</small></sup>");
     }
 
     @Override

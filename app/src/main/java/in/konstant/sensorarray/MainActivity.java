@@ -88,13 +88,9 @@ public class MainActivity extends Activity
     @Override
     public void onNavigationDrawerItemSelected(final int group, final int child) {
         // update the main content by replacing fragments
-
-        //TODO: Fragment Classes for Device, Sensor, etc. Views
-        //TODO: Child = -1 -> Device View
-
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, SensorFragment.newInstance(group, child))
+                .replace(R.id.container, SensorFragment.getInstance(group, child))
                 .commit();
     }
 
@@ -106,7 +102,7 @@ public class MainActivity extends Activity
         ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
+        //actionBar.setTitle(mTitle);
     }
 
     @Override

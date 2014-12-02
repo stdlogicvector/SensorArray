@@ -53,11 +53,13 @@ public class Unit {
             }
         }
 
-        if (text) {
-            return (num.toString() + " per " + den.toString());
-        } else {
-            return ("(" + num.toString() + ")/(" + den.toString() + ")");
-        }
+        if (den.length() > 0) {
+            if (text)
+                return (num.toString() + " per " + den.toString());
+            else
+                return ("(" + num.toString() + ")/(" + den.toString() + ")");
+        } else
+            return num.toString();
     }
 
     @Override

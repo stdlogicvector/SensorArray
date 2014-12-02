@@ -150,7 +150,7 @@ public class InternalSensor
                                 3,
                                 mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Acceleration", "a", Prefix.NO_PREFIX, subunits))
+                                new Unit("Acceleration", "g", Prefix.NO_PREFIX, subunits))
                 );
             break;
 
@@ -249,7 +249,7 @@ public class InternalSensor
                                 1,
                                 mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Centimeter", "cm", Prefix.CENTI, subunits))
+                                new Unit("Meter", "m", Prefix.CENTI, subunits))
                 );
                 break;
 
@@ -270,7 +270,7 @@ public class InternalSensor
                                 1,
                                 mSensor.getMinDelay(),
                                 ranges,
-                                new Unit("Millibar", "mBar", Prefix.MILLI, subunits))
+                                new Unit("Bar", "Bar", Prefix.MILLI, subunits))
                 );
             break;
         }
