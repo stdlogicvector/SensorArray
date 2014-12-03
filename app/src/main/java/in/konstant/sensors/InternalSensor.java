@@ -38,14 +38,16 @@ public class InternalSensor
 
     public void activate() {
         mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_UI);
+        active = true;
     }
 
     public void deactivate() {
+        active = false;
         mSensorManager.unregisterListener(this);
     }
-/*
+
     public float[] getValue(int id) {
-        if (id >= 0 && id < mMeasurements.size()) {
+        if (active && id >= 0 && id < mMeasurements.size()) {
             int size = mMeasurements.get(id).getSize();
             float[] result = new float[size];
 
@@ -58,7 +60,7 @@ public class InternalSensor
             return null;
         }
     }
-*/
+
     public void onSensorChanged(SensorEvent event) {
         lastValues = event.values;
         timestamp = event.timestamp;

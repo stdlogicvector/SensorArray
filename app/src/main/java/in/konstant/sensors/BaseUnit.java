@@ -1,7 +1,7 @@
 package in.konstant.sensors;
 
 public enum BaseUnit {
-    NONE("", "", ""),
+    NONE("", "", "1"),
     METER("meter", "length", "m"),
     KILOGRAM("kilogram", "mass", "kg"),
     SECOND("second", "time", "s"),

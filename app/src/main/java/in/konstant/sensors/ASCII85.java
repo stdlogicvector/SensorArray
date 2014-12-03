@@ -15,12 +15,10 @@ public class ASCII85 {
         int value = 0;
         int m = 1;
 
-        for (int i = 4; i-- > 0;) {
+        for (int i = 4; i >= 0; i--) {
             value += (encoded.charAt(i) - '!') * m;
             m *= 85;
         }
-
-        Log.d("ASCII85", "decodeToInt(" + encoded + ") = " + value);
 
         return value;
     }
@@ -29,13 +27,11 @@ public class ASCII85 {
         int value = decodeToInt(encoded);
 
         ByteBuffer buf = ByteBuffer.allocate(4)
-                                   .order(ByteOrder.BIG_ENDIAN)
+                                   .order(ByteOrder.LITTLE_ENDIAN)
                                    .putInt(value);
 
         buf.rewind();
 
-        //TODO: Conversion to Float not working correctly
-
-        return buf.order(ByteOrder.BIG_ENDIAN).getFloat();
+        return buf.getFloat();
     }
 }

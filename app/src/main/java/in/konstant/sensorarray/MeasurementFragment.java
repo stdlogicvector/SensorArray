@@ -6,11 +6,15 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v4.widget.ResourceCursorAdapter;
 import android.text.Html;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.HashMap;
 
@@ -18,6 +22,7 @@ import in.konstant.R;
 import in.konstant.sensors.Measurement;
 import in.konstant.sensors.Sensor;
 import in.konstant.sensors.SensorArray;
+import in.konstant.sensors.SensorDevice;
 
 public class MeasurementFragment extends Fragment {
 
@@ -28,17 +33,21 @@ public class MeasurementFragment extends Fragment {
     private static final HashMap<Integer, MeasurementFragment> instances = new HashMap<Integer, MeasurementFragment>();
 
     private SensorArray sensorArray;
-    private Measurement measurement;
+    private SensorDevice sensorDevice = null;
+    private Sensor sensor = null;
+    private Measurement measurement = null;
 
     private int deviceNumber;
     private int sensorNumber;
     private int measurementNumber;
 
+    private TextView values;
+
     // Returns a new instance of this fragment for the given sensor
     public static MeasurementFragment getInstance(int deviceNumber, int sensorNumber, int measurementNumber) {
         Integer key = (deviceNumber << 16) + (sensorNumber << 8) + measurementNumber;
 
-        Log.d("MeasurementFragment", "new " + deviceNumber + ' ' + sensorNumber + ' ' + measurementNumber + " " + key);
+        Log.d("MeasurementFragment", "get " + deviceNumber + ' ' + sensorNumber + ' ' + measurementNumber + " " + key);
 
         MeasurementFragment instance = instances.get(key);
 
@@ -76,9 +85,10 @@ public class MeasurementFragment extends Fragment {
 
         if (deviceNumber < sensorArray.count() &&
             measurementNumber < sensorArray.getDevice(deviceNumber).getNumberOfSensors()) {
-            measurement = sensorArray.getDevice(deviceNumber)
-                                     .getSensor(sensorNumber)
-                                     .getMeasurement(measurementNumber);
+
+            sensorDevice = sensorArray.getDevice(deviceNumber);
+            sensor = sensorDevice.getSensor(sensorNumber);
+            measurement = sensor.getMeasurement(measurementNumber);
         }
 /*
         if (measurement != null)
@@ -109,20 +119,56 @@ public class MeasurementFragment extends Fragment {
             String SIunit = getResources().getString(R.string.MeasurementFragmentUnitSI) +
                             measurement.getUnit().getSIUnit(false);
 
-            //TODO: Display range with correct amount of digit precision
             String range = getResources().getString(R.string.MeasurementFragmentRange) +
-                           measurement.getCurrentRange().getMin() +
+                           measurement.getCurrentRange().getMinFormatted() +
                            measurement.getUnit().toString() +
                            " - " +
-                           measurement.getCurrentRange().getMax() +
+                           measurement.getCurrentRange().getMaxFormatted() +
                            measurement.getUnit().toString();
 
             ((TextView) rootView.findViewById(R.id.tvMeasurementName)).setText(name);
             ((TextView) rootView.findViewById(R.id.tvMeasurementUnitName)).setText(unitDesc);
             ((TextView) rootView.findViewById(R.id.tvMeasurementUnitSubunits)).setText(SIunit);
             ((TextView) rootView.findViewById(R.id.tvMeasurementRange)).setText(range);
+
+            values = ((TextView) rootView.findViewById(R.id.tvMeasurementValue));
+            values.setMovementMethod(new ScrollingMovementMethod());
+
+            ((Button) rootView.findViewById(R.id.btEnableMeasurement)).setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    enableOnClick(v);
+                }
+            });
+
+            ((Button) rootView.findViewById(R.id.btGetMeasurementValue)).setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    getValueOnClick(v);
+                }
+            });
+
         }
 
         return rootView;
+    }
+
+    public void enableOnClick(View v) {
+        if (sensor.isActive()) {
+            ((Button) v).setText("Enable");
+            sensor.deactivate();
+        } else {
+            sensor.activate();
+            ((Button) v).setText("Disable");
+        }
+    }
+
+    public void getValueOnClick(View v) {
+        if (sensor.isActive()) {
+            float[] value = sensor.getValue(measurementNumber);
+
+            for (int n = 0; n < value.length; n++)
+                values.append("" + value[n] + "  ");
+
+            values.append("\r\n");
+        }
     }
 }

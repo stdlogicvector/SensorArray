@@ -8,6 +8,8 @@ public abstract class Sensor {
     ArrayList<Measurement> mMeasurements;
     ArrayList<SensorValueListener> mValueListeners;
 
+    boolean active = false;
+
     public Sensor() {
         mValueListeners = new ArrayList<SensorValueListener>();
         mMeasurements = new ArrayList<Measurement>();
@@ -36,7 +38,11 @@ public abstract class Sensor {
 
     public abstract void deactivate();
 
-    //    abstract float[] getValue(final int id);
+    public boolean isActive() {
+        return active;
+    }
+
+    public abstract float[] getValue(final int id);
 
     public int getNumberOfMeasurements() {
         return mMeasurements.size();

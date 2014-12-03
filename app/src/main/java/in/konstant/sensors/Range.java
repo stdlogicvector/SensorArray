@@ -23,8 +23,16 @@ public class Range {
         return this.digits;
     }
 
+    public String getMinFormatted() {
+        return String.format("%." + digits + "f", min);
+    }
+
+    public String getMaxFormatted() {
+        return String.format("%." + digits + "f", max);
+    }
+
     public String toString() {
-       return String.format("%." + digits + "f - %." + digits + "f");
-   }
+        return String.format("%." + digits + "f - %." + digits + "f", min, max);
+    }
 
 }

@@ -33,6 +33,11 @@ public class ExternalSensor extends Sensor {
 
     }
 
+    public float[] getValue(final int id) {
+
+        return null;
+    }
+
     public void addMeasurement(final Measurement measurement) {
         mMeasurements.add(measurement);
     }

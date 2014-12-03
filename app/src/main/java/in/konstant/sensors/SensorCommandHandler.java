@@ -158,7 +158,7 @@ public class SensorCommandHandler
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_NO_SENSORS)) {
-            return (int)(result[1].charAt(0)) - 48;
+            return (int)(result[1].charAt(0)) - '0';
         } else
             return 0;
     }
@@ -169,8 +169,8 @@ public class SensorCommandHandler
 
         if (result[0].equals("" + CMD.GET_SENSOR)) {
             return new ExternalSensor(
-                        (int)(result[1].charAt(0)) - 48,
-                        Type.fromInteger((int)(result[2].charAt(0)) - 48),
+                        (int)(result[1].charAt(0)) - '0',
+                        Type.fromInteger((int)(result[2].charAt(0)) - '0'),
                         result[3],
                         result[4]);
         } else
@@ -182,7 +182,7 @@ public class SensorCommandHandler
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_NO_MEAS)) {
-            return (int)(result[2].charAt(0)) - 48;
+            return (int)(result[2].charAt(0)) - '0';
         } else
             return 0;
     }
@@ -200,7 +200,7 @@ public class SensorCommandHandler
             Unit unit = new Unit(
                     result[6],
                     result[7],
-                    Prefix.fromInteger((int)(result[8].charAt(0)) - 48),
+                    Prefix.fromInteger((int)(result[8].charAt(0)) - '0'),
                     Subunit.fromString(result[9]));
 
             ArrayList<Range> ranges = new ArrayList<Range>();
@@ -209,7 +209,7 @@ public class SensorCommandHandler
                 Range range = new Range(
                                   ASCII85.decodeToFloat(result[11 + 3*r]),
                                   ASCII85.decodeToFloat(result[12 + 3*r]),
-                                  (int)(result[13 + 3*r].charAt(0)) - 48
+                                  (int)(result[13 + 3*r].charAt(0)) - '0'
                 );
 
                 ranges.add(range);
@@ -217,7 +217,7 @@ public class SensorCommandHandler
 
             return new Measurement(
                     result[3],
-                    (int)(result[4].charAt(0)) - 48,
+                    (int)(result[4].charAt(0)) - '0',
                     ASCII85.decodeToInt(result[5]),
                     ranges.toArray(new Range[ranges.size()]),
                     unit
