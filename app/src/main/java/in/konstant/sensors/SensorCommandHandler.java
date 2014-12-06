@@ -135,6 +135,9 @@ public class SensorCommandHandler
 
                 case CMD_DELIMITER:
                     arguments.add(reply.toString());
+
+                    Log.d(TAG, reply.toString());
+
                     reply.setLength(0);
                     break;
 
@@ -144,6 +147,9 @@ public class SensorCommandHandler
 
                 case CMD_END_CHAR:
                     arguments.add(reply.toString());
+
+                    Log.d(TAG, reply.toString());
+
                     return true;
             }
             data[b] = 0;
@@ -226,31 +232,55 @@ public class SensorCommandHandler
             return null;
     }
 
-    //TODO: Implement getSensorValue()
+    public float[] getSensorValue(final int sensorId, final int measurementId) {
+        String cmd = buildCommand(CMD.GET_SENSOR_VALUE,
+                (char)(sensorId + '0'),
+                (char)(measurementId + '0'),
+                '\0');
 
-    //TODO: Implement getSensorRange()
+        String[] result = sendCommand(cmd);
+
+        if (result[0].equals("" + CMD.GET_SENSOR_VALUE)) {
+
+            int range = Integer.parseInt(result[3]);
+            int size = Integer.parseInt(result[4]);
+
+            float[] value = new float[size];
+
+            for (int v = 0; v < size; v++) {
+                value[v] = ASCII85.decodeToFloat(result[5+v]);
+            }
+
+            return value;
+        } else
+            return null;
+    }
+
+    public int setSensorRange(final int sensorId, final int measurementId, final int rangeId) {
+        String cmd = buildCommand(CMD.SET_SENSOR_RANGE,
+                (char)(sensorId + '0'),
+                (char)(measurementId + '0'),
+                (char)(rangeId + '0'));
+
+        String[] result = sendCommand(cmd);
+
+        if (result[0].equals("" + CMD.SET_SENSOR_RANGE)) {
+            return Integer.parseInt(result[3]);
+        } else
+            return -1;
+    }
 
 //--------------------------------------------
 
-    private static String buildCommand(final char id, final char arg1, final char arg2, final char arg3) {
+    private static String buildCommand(final char id, final char... args) {
         StringBuilder cmd = new StringBuilder();
 
         cmd.append(CMD_START_CHAR);
         cmd.append(id);
 
-        if (arg1 != 0) {
+        for (char a:args) {
             cmd.append(CMD_DELIMITER);
-            cmd.append(arg1);
-
-            if (arg2 != 0) {
-                cmd.append(CMD_DELIMITER);
-                cmd.append(arg2);
-
-                if (arg3 != 0) {
-                    cmd.append(CMD_DELIMITER);
-                    cmd.append(arg3);
-                }
-            }
+            cmd.append(a);
         }
 
         cmd.append(CMD_END_CHAR);

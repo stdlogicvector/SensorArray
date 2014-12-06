@@ -1,7 +1,5 @@
 package in.konstant.sensors;
 
-import android.util.Log;
-
 public class ExternalSensor extends Sensor {
 
     private final int id;
@@ -26,11 +24,11 @@ public class ExternalSensor extends Sensor {
     }
 
     public void activate() {
-
+        this.active = true;
     }
 
     public void deactivate() {
-
+        this.active = false;
     }
 
     public float[] getValue(final int id) {

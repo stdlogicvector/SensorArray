@@ -26,9 +26,9 @@ public class ExternalSensorDevice
     }
 
     public boolean initialize() {
-        if (DBG) Log.d(TAG, "initialize()");
         if (mConnected) {
 
+            //TODO: Synchronize clearing of mSensors with UI-Tread to avoid accessing empty list
 //            mSensors.clear();
 
             Runnable initializer = new Runnable() {
@@ -84,6 +84,15 @@ public class ExternalSensorDevice
 
     public String getBluetoothName() {
         return btDevice.getName();
+    }
+
+    public float[] getMeasurementValue(final int sensorId, final int measurementId) {
+        //TODO: getMeasurementValue(...) does not work!
+        /*
+        Blocks GUI Thread because MainLooper is used to process
+        Messages from BTDevice to CommandHandler
+        */
+        return CommandHandler.getSensorValue(sensorId, measurementId);
     }
 
     private final Handler BTStateHandler = new Handler() {

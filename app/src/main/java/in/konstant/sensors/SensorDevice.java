@@ -61,4 +61,6 @@ public abstract class SensorDevice {
     public Sensor getSensor(final int id) {
         return mSensors.get(id);
     }
+
+    public abstract float[] getMeasurementValue(final int sensorId, final int measurementId);
 }

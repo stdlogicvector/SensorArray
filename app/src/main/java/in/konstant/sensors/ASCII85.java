@@ -1,14 +1,28 @@
 package in.konstant.sensors;
 
-import android.util.Log;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class ASCII85 {
-    public static String encode(int data) {
-        //TODO: ASCII85 encoding not yet implemented
-        return null;
+    public static String encodeFromInt(int value) {
+        char[] encoded = new char[5];
+
+        for (int i = 4; i >= 0; i--) {
+            encoded[i] = (char) ((value % 85) + 33);
+            value /= 85;
+        }
+
+        return new String(encoded);
+    }
+
+    public static String encodeFromFloat(float value) {
+        ByteBuffer buf = ByteBuffer.allocate(4)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .putFloat(value);
+
+        buf.rewind();
+
+        return encodeFromInt(buf.getInt());
     }
 
     public static int decodeToInt(String encoded) {

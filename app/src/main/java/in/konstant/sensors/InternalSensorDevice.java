@@ -57,4 +57,8 @@ public class InternalSensorDevice
     public String getBluetoothName() {
         return BluetoothAdapter.getDefaultAdapter().getName();
     }
+
+    public float[] getMeasurementValue(final int sensorId, final int measurementId) {
+        return mSensors.get(sensorId).getValue(measurementId);
+    }
 }

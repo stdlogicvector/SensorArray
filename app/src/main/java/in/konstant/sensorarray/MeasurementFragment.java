@@ -1,11 +1,9 @@
 package in.konstant.sensorarray;
 
 import android.app.Activity;
-import android.net.Uri;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.support.v4.widget.ResourceCursorAdapter;
-import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,8 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 import java.util.HashMap;
 
@@ -41,7 +37,8 @@ public class MeasurementFragment extends Fragment {
     private int sensorNumber;
     private int measurementNumber;
 
-    private TextView values;
+    private Activity activity;
+    private TextView value;
 
     // Returns a new instance of this fragment for the given sensor
     public static MeasurementFragment getInstance(int deviceNumber, int sensorNumber, int measurementNumber) {
@@ -71,6 +68,7 @@ public class MeasurementFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        this.activity = activity;
     }
 
     @Override
@@ -131,8 +129,10 @@ public class MeasurementFragment extends Fragment {
             ((TextView) rootView.findViewById(R.id.tvMeasurementUnitSubunits)).setText(SIunit);
             ((TextView) rootView.findViewById(R.id.tvMeasurementRange)).setText(range);
 
-            values = ((TextView) rootView.findViewById(R.id.tvMeasurementValue));
-            values.setMovementMethod(new ScrollingMovementMethod());
+            Typeface tf = Typeface.createFromAsset(activity.getAssets(), "fonts/pocket_calculator.ttf");
+
+            value = ((TextView) rootView.findViewById(R.id.tvMeasurementValue));
+            value.setTypeface(tf);
 
             ((Button) rootView.findViewById(R.id.btEnableMeasurement)).setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
@@ -163,12 +163,12 @@ public class MeasurementFragment extends Fragment {
 
     public void getValueOnClick(View v) {
         if (sensor.isActive()) {
-            float[] value = sensor.getValue(measurementNumber);
+            float[] value = sensorDevice.getMeasurementValue(sensorNumber, measurementNumber);
+
+            this.value.setText("");
 
             for (int n = 0; n < value.length; n++)
-                values.append("" + value[n] + "  ");
-
-            values.append("\r\n");
+                this.value.append("" + value[n] + "\n");
         }
     }
 }
