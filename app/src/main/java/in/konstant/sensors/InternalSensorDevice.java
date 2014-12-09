@@ -58,7 +58,16 @@ public class InternalSensorDevice
         return BluetoothAdapter.getDefaultAdapter().getName();
     }
 
-    public float[] getMeasurementValue(final int sensorId, final int measurementId) {
-        return mSensors.get(sensorId).getValue(measurementId);
+    public boolean getMeasurementValue(final int sensorId, final int measurementId) {
+        if (mConnected) {
+
+            //TODO: Better Solution for different behaviour of InternalSensor?
+            float[] value = ((InternalSensor) mSensors.get(sensorId)).getValue(measurementId);
+
+            notifySensorValueEvent(mSensors.get(sensorId), measurementId, value);
+
+            return true;
+        } else
+            return false;
     }
 }

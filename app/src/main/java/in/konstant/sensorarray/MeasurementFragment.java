@@ -19,8 +19,11 @@ import in.konstant.sensors.Measurement;
 import in.konstant.sensors.Sensor;
 import in.konstant.sensors.SensorArray;
 import in.konstant.sensors.SensorDevice;
+import in.konstant.sensors.SensorValueListener;
 
-public class MeasurementFragment extends Fragment {
+public class MeasurementFragment
+        extends Fragment
+        implements SensorValueListener {
 
     private static final String ARG_DEVICE_NUMBER = "device_number";
     private static final String ARG_SENSOR_NUMBER = "sensor_number";
@@ -87,11 +90,19 @@ public class MeasurementFragment extends Fragment {
             sensorDevice = sensorArray.getDevice(deviceNumber);
             sensor = sensorDevice.getSensor(sensorNumber);
             measurement = sensor.getMeasurement(measurementNumber);
+
+            sensorDevice.registerValueListener(this);
         }
 /*
         if (measurement != null)
             ((MainActivity) getActivity()).onFragmentCreated(measurement.getName());
 */
+    }
+
+    @Override
+    public void onDestroy() {
+        sensorDevice.unregisterValueListener(this);
+        super.onDestroy();
     }
 
     @Override
@@ -163,12 +174,14 @@ public class MeasurementFragment extends Fragment {
 
     public void getValueOnClick(View v) {
         if (sensor.isActive()) {
-            float[] value = sensorDevice.getMeasurementValue(sensorNumber, measurementNumber);
-
-            this.value.setText("");
-
-            for (int n = 0; n < value.length; n++)
-                this.value.append("" + value[n] + "\n");
+            sensorDevice.getMeasurementValue(sensorNumber, measurementNumber);
         }
+    }
+
+    public void onSensorValueChanged(final Sensor sensor, final int measurementId, final float[] value) {
+        this.value.setText("");
+
+        for (int n = 0; n < value.length; n++)
+            this.value.append("" + value[n] + "\n");
     }
 }

@@ -10,11 +10,13 @@ public abstract class SensorDevice {
 
     protected ArrayList<Sensor> mSensors;
     protected ArrayList<SensorDeviceEventListener> mStateListeners;
+    protected ArrayList<SensorValueListener> mValueListeners;
 
     public SensorDevice(final String address) {
         this.mAddress = address;
         mSensors = new ArrayList<Sensor>();
         mStateListeners = new ArrayList<SensorDeviceEventListener>();
+        mValueListeners = new ArrayList<SensorValueListener>();
     }
 
     public boolean registerStateListener(final SensorDeviceEventListener listener) {
@@ -28,6 +30,20 @@ public abstract class SensorDevice {
     protected void notifySensorDeviceEvent(final int event) {
         for (SensorDeviceEventListener listener : mStateListeners) {
             listener.onSensorDeviceEvent(this, event);
+        }
+    }
+
+    public boolean registerValueListener(final SensorValueListener listener) {
+        return mValueListeners.add(listener);
+    }
+
+    public boolean unregisterValueListener(final SensorValueListener listener) {
+        return mValueListeners.remove(listener);
+    }
+
+    protected void notifySensorValueEvent(final Sensor sensor, final int measurementId, final float[] value) {
+        for (SensorValueListener listener : mValueListeners) {
+            listener.onSensorValueChanged(sensor, measurementId, value);
         }
     }
 
@@ -62,5 +78,5 @@ public abstract class SensorDevice {
         return mSensors.get(id);
     }
 
-    public abstract float[] getMeasurementValue(final int sensorId, final int measurementId);
+    public abstract boolean getMeasurementValue(final int sensorId, final int measurementId);
 }

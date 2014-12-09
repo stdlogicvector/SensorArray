@@ -6,16 +6,16 @@ public abstract class Sensor {
 
     Type type;
     ArrayList<Measurement> mMeasurements;
-    ArrayList<SensorValueListener> mValueListeners;
+//    ArrayList<SensorValueListener> mValueListeners;
 
     boolean active = false;
 
     public Sensor() {
-        mValueListeners = new ArrayList<SensorValueListener>();
+//        mValueListeners = new ArrayList<SensorValueListener>();
         mMeasurements = new ArrayList<Measurement>();
         type = Type.GENERIC;
     }
-
+/*
     public boolean registerValueListener(final SensorValueListener listener) {
         return mValueListeners.add(listener);
     }
@@ -29,7 +29,7 @@ public abstract class Sensor {
             listener.onSensorValueChanged();
         }
     }
-
+*/
     public abstract String getName();
 
     public abstract String getPart();
@@ -42,7 +42,7 @@ public abstract class Sensor {
         return active;
     }
 
-    public abstract float[] getValue(final int id);
+//    public abstract float[] getValue(final int id);
 
     public int getNumberOfMeasurements() {
         return mMeasurements.size();

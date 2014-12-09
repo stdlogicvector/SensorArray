@@ -167,6 +167,7 @@ public class SensorCommandHandler
             return (int)(result[1].charAt(0)) - '0';
         } else
             return 0;
+        //TODO: Throw Exception
     }
 
     public ExternalSensor getSensor(final int sensorId) {
@@ -181,6 +182,7 @@ public class SensorCommandHandler
                         result[4]);
         } else
             return null;
+        //TODO: Throw Exception
     }
 
     public int getNrOfMeasurements(final int sensorId) {
@@ -191,6 +193,7 @@ public class SensorCommandHandler
             return (int)(result[2].charAt(0)) - '0';
         } else
             return 0;
+        //TODO: Throw Exception
     }
 
     public Measurement getMeasurement(final int sensorId, final int measurementId) {
@@ -230,6 +233,7 @@ public class SensorCommandHandler
                     );
         } else
             return null;
+        //TODO: Throw Exception
     }
 
     public float[] getSensorValue(final int sensorId, final int measurementId) {
@@ -254,6 +258,7 @@ public class SensorCommandHandler
             return value;
         } else
             return null;
+        //TODO: Throw Exception
     }
 
     public int setSensorRange(final int sensorId, final int measurementId, final int rangeId) {
@@ -268,6 +273,7 @@ public class SensorCommandHandler
             return Integer.parseInt(result[3]);
         } else
             return -1;
+        //TODO: Throw Exception
     }
 
 //--------------------------------------------

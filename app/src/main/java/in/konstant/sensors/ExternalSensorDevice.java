@@ -1,5 +1,6 @@
 package in.konstant.sensors;
 
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -19,7 +20,7 @@ public class ExternalSensorDevice
         super(address);
 
         btDevice = new BTDevice(mAddress);
-        btDevice.setStateHandler(BTStateHandler);
+        btDevice.setStateHandler(messageHandler);
 
         CommandHandler = new SensorCommandHandler(btDevice);
         CommandHandler.start();
@@ -54,8 +55,8 @@ public class ExternalSensorDevice
                             mSensors.add(sensor);
                         }
                     }
-                    // TODO: Own handler? For just one message? Better rename Handler?
-                    BTStateHandler.sendEmptyMessage(SensorEvent.INITIALIZED);
+
+                    messageHandler.sendEmptyMessage(SensorEvent.INITIALIZED);
                 }
             };
 
@@ -86,16 +87,29 @@ public class ExternalSensorDevice
         return btDevice.getName();
     }
 
-    public float[] getMeasurementValue(final int sensorId, final int measurementId) {
-        //TODO: getMeasurementValue(...) does not work!
-        /*
-        Blocks GUI Thread because MainLooper is used to process
-        Messages from BTDevice to CommandHandler
-        */
-        return CommandHandler.getSensorValue(sensorId, measurementId);
+    public boolean getMeasurementValue(final int sensorId, final int measurementId) {
+        if (mConnected) {
+            Runnable valueGetter = new Runnable() {
+                @Override
+                public void run() {
+                    float[] value = CommandHandler.getSensorValue(sensorId, measurementId);
+
+                    Message msg = messageHandler.obtainMessage(SensorEvent.VALUE, sensorId, measurementId);
+                    Bundle msgData = new Bundle();
+                    msgData.putFloatArray("VALUE", value);
+                    msg.setData(msgData);
+                    messageHandler.sendMessage(msg);
+                }
+            };
+
+            new Thread(valueGetter).start();
+
+            return true;
+        } else
+            return false;
     }
 
-    private final Handler BTStateHandler = new Handler() {
+    private final Handler messageHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             if (DBG) Log.d(TAG, "handleMessage(" + msg.what + ")");
@@ -109,6 +123,11 @@ public class ExternalSensorDevice
                     break;
                 case SensorEvent.INITIALIZED:
                     notifySensorDeviceEvent(SensorEvent.INITIALIZED);
+                    break;
+                case SensorEvent.VALUE:
+                    notifySensorValueEvent(getSensor(msg.arg1),
+                                           msg.arg2,
+                                           msg.getData().getFloatArray("VALUE"));
                     break;
                 case BTDevice.BTStateEvent.DISCONNECTED:
                     mConnected = false;
