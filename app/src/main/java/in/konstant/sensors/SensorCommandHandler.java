@@ -42,15 +42,15 @@ public class SensorCommandHandler
     private final Object commandMonitor;
     private final Object replyMonitor;
 
-    private BTDevice btDevice;
+    private final ExternalSensorDevice sensorDevice; // Reference to parent
 
-    public SensorCommandHandler(final BTDevice btDevice) {
+    public SensorCommandHandler(final ExternalSensorDevice sensorDevice) {
         setPriority(Thread.NORM_PRIORITY);
 
-        this.btDevice = btDevice;
+        this.sensorDevice = sensorDevice;
 
         inHandler = new Handler(Looper.getMainLooper(), handleInMessage);
-        btDevice.setDataHandler(inHandler);
+        sensorDevice.btDevice.setDataHandler(inHandler);
 
         commandToSend = false;
         replyReceived = false;
@@ -93,7 +93,18 @@ public class SensorCommandHandler
                     while (!commandToSend)
                         commandMonitor.wait();
 
-                    btDevice.send(command.getBytes());
+                    if (! sensorDevice.btDevice.send(command.getBytes())) {
+                        // Command could not be sent
+
+                        // No reply
+                        arguments.clear();
+
+                        // Notify to stop waiting for reply
+                        synchronized (replyMonitor) {
+                            replyReceived = true;
+                            replyMonitor.notify();
+                        }
+                    }
 
                     commandToSend = false;
 
@@ -135,9 +146,6 @@ public class SensorCommandHandler
 
                 case CMD_DELIMITER:
                     arguments.add(reply.toString());
-
-                    Log.d(TAG, reply.toString());
-
                     reply.setLength(0);
                     break;
 
@@ -147,9 +155,6 @@ public class SensorCommandHandler
 
                 case CMD_END_CHAR:
                     arguments.add(reply.toString());
-
-                    Log.d(TAG, reply.toString());
-
                     return true;
             }
             data[b] = 0;
@@ -157,20 +162,23 @@ public class SensorCommandHandler
         return false;
     }
 
-//--------------------------------------------
+// --------------------------------------------
 
-    public int getNrOfSensors() {
+    public int getNrOfSensors()
+    throws IllegalStateException
+    {
         String cmd = buildCommand(CMD.GET_NO_SENSORS);
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_NO_SENSORS)) {
             return (int)(result[1].charAt(0)) - '0';
         } else
-            return 0;
-        //TODO: Throw Exception
+            throw new IllegalStateException("Reply did not match Command.");
     }
 
-    public ExternalSensor getSensor(final int sensorId) {
+    public ExternalSensor getSensor(final int sensorId)
+    throws IllegalStateException
+    {
         String cmd = buildCommand(CMD.GET_SENSOR, (char)(sensorId + '0'));
         String[] result = sendCommand(cmd);
 
@@ -179,24 +187,27 @@ public class SensorCommandHandler
                         (int)(result[1].charAt(0)) - '0',
                         Type.fromInteger((int)(result[2].charAt(0)) - '0'),
                         result[3],
-                        result[4]);
+                        result[4],
+                        sensorDevice);
         } else
-            return null;
-        //TODO: Throw Exception
+            throw new IllegalStateException("Reply did not match Command.");
     }
 
-    public int getNrOfMeasurements(final int sensorId) {
+    public int getNrOfMeasurements(final int sensorId)
+    throws IllegalStateException
+    {
         String cmd = buildCommand(CMD.GET_NO_MEAS, (char)(sensorId + '0'));
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_NO_MEAS)) {
             return (result[2].charAt(0) - '0');
         } else
-            return 0;
-        //TODO: Throw Exception
+            throw new IllegalStateException("Reply did not match Command.");
     }
 
-    public Measurement getMeasurement(final int sensorId, final int measurementId) {
+    public Measurement getMeasurement(final int sensorId, final int measurementId)
+    throws IllegalStateException
+    {
         String cmd = buildCommand(CMD.GET_SENSOR_MEAS,
                                   (char)(sensorId + '0'),
                                   (char)(measurementId + '0'));
@@ -231,11 +242,12 @@ public class SensorCommandHandler
                     unit
                     );
         } else
-            return null;
-        //TODO: Throw Exception
+            throw new IllegalStateException("Reply did not match Command.");
     }
 
-    public float[] getSensorValue(final int sensorId, final int measurementId) {
+    public float[] getSensorValue(final int sensorId, final int measurementId)
+    throws IllegalStateException
+    {
         String cmd = buildCommand(CMD.GET_SENSOR_VALUE,
                 (char)(sensorId + '0'),
                 (char)(measurementId + '0'));
@@ -255,11 +267,12 @@ public class SensorCommandHandler
 
             return value;
         } else
-            return null;
-        //TODO: Throw Exception
+            throw new IllegalStateException("Reply did not match Command.");
     }
 
-    public int setSensorRange(final int sensorId, final int measurementId, final int rangeId) {
+    public int setSensorRange(final int sensorId, final int measurementId, final int rangeId)
+    throws IllegalStateException
+    {
         String cmd = buildCommand(CMD.SET_SENSOR_RANGE,
                 (char)(sensorId + '0'),
                 (char)(measurementId + '0'),
@@ -270,11 +283,10 @@ public class SensorCommandHandler
         if (result[0].equals("" + CMD.SET_SENSOR_RANGE)) {
             return Integer.parseInt(result[3]);
         } else
-            return -1;
-        //TODO: Throw Exception
+            throw new IllegalStateException("Reply did not match Command.");
     }
 
-//--------------------------------------------
+// --------------------------------------------
 
     private static String buildCommand(final char id, final char... args) {
         StringBuilder cmd = new StringBuilder();
@@ -282,7 +294,7 @@ public class SensorCommandHandler
         cmd.append(CMD_START_CHAR);
         cmd.append(id);
 
-        for (char a:args) {
+        for (char a : args) {
             cmd.append(CMD_DELIMITER);
             cmd.append(a);
         }

@@ -156,14 +156,14 @@ public class MeasurementFragment
     }
 
     public void enableOnClick(View v) {
-        if (sensor.isActive()) {
+        if (sensor.isMeasuring()) {
             ((Button) v).setText("Enable");
-            sensorDevice.stopMeasuring();
+            sensor.stopMeasuring();
             sensor.deactivate();
         } else {
             sensor.activate();
-            sensorDevice.getMeasurementValue(sensorNumber, measurementNumber, 1000);
-            ((Button) v).setText("Disable");
+            if (sensor.startMeasuring(measurementNumber, 500))
+                ((Button) v).setText("Disable");
         }
     }
 

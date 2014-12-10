@@ -10,9 +10,8 @@ Current Status of the App:
 
 Navigation Drawer with a list of Devices and Sensors
 
-![Navigation Drawer](https://raw.githubusercontent.com/konstantinwerner/SensorArray/master/screenshots/Screenshot_2014-11-22-19-31-29.png)
+![Navigation Drawer](https://raw.githubusercontent.com/konstantinwerner/SensorArray/master/screenshots/Screenshot_2014-12-11-00-38-10.png)
 
 Sensor details
 
-![Sensor View](https://raw.github.com/konstantinwerner/SensorArray/master/screenshots/Screenshot_2014-11-24-22-51-32.png)
-(Measurement details not yet implemented)
+![Sensor View](https://raw.github.com/konstantinwerner/SensorArray/master/screenshots/Screenshot_2014-12-11-00-37-54.png)

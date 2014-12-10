@@ -41,8 +41,8 @@ public class SensorFragment extends Fragment {
 
     private int pagerId;
 
-    private MeasurementPagerAdapter mAdapter;
-    private ViewPager mPager;
+    private MeasurementPagerAdapter pagerAdapter;
+    private ViewPager pager;
 
     // Returns a new instance of this fragment for the given sensor
     public static synchronized SensorFragment getInstance(int deviceNumber, int sensorNumber) {
@@ -101,7 +101,7 @@ public class SensorFragment extends Fragment {
 
         sensor = device.getSensor(sensorNumber);
 
-        mAdapter = new MeasurementPagerAdapter(getFragmentManager(), deviceNumber, sensorNumber);
+        pagerAdapter = new MeasurementPagerAdapter(getFragmentManager(), deviceNumber, sensorNumber);
 
         if (sensor != null)
             ((MainActivity) getActivity()).onFragmentCreated(sensor.getName());
@@ -113,8 +113,8 @@ public class SensorFragment extends Fragment {
 
         super.onActivityCreated(savedInstanceState);
 
-        mPager = (ViewPager) getView().findViewById(pagerId);
-        mPager.setAdapter(mAdapter);
+        pager = (ViewPager) getView().findViewById(pagerId);
+        pager.setAdapter(pagerAdapter);
     }
 
     @Override

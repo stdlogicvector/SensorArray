@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.os.Handler;
-import android.os.Message;
 import android.os.ParcelUuid;
 import android.util.Log;
 
@@ -35,136 +34,138 @@ public class BTDevice {
         public static final int DATA_RECEIVED = 2;
     }
 
-    private Handler mStateHandler;
-    private Handler mDataHandler;
+    private Handler stateHandler;
+    private Handler dataHandler;
 
-    private String mAddress;
-    private boolean mConnected;
-    private boolean mConnecting;
+    private String address;
+    private boolean connected;
+    private boolean connecting;
 
-    private final BluetoothAdapter mBluetoothAdapter;
-    private final BluetoothDevice mBluetoothDevice;
+    private final BluetoothAdapter bluetoothAdapter;
+    private final BluetoothDevice bluetoothDevice;
 
-    private ConnectThread mConnectThread;
-    private ConnectedThread mConnectedThread;
+    private ConnectThread connectThread;
+    private ConnectedThread connectedThread;
 
     public BTDevice(final String address) {
         if (DBG) Log.d(TAG, "BTDevice(" + address + ")");
 
-        mAddress = address;
+        this.address = address;
 
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(mAddress);
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        bluetoothDevice = bluetoothAdapter.getRemoteDevice(this.address);
 
-        mConnected = false;
-        mConnecting = false;
+        connected = false;
+        connecting = false;
     }
 
     public void setStateHandler(final Handler stateHandler) {
-        this.mStateHandler = stateHandler;
+        this.stateHandler = stateHandler;
     }
 
     public void setDataHandler(final Handler dataHandler) {
-        this.mDataHandler = dataHandler;
+        this.dataHandler = dataHandler;
     }
 
     public void destroy() {
         if (DBG) Log.d(TAG, "destroy()");
 
-        if (mConnectThread != null) {
-            mConnectThread.cancel();
-            mConnectThread = null;
+        if (connectThread != null) {
+            connectThread.cancel();
+            connectThread = null;
         }
 
-        if (mConnectedThread != null) {
-            mConnectedThread.cancel();
-            mConnectedThread = null;
+        if (connectedThread != null) {
+            connectedThread.cancel();
+            connectedThread = null;
         }
 
-        mConnected = false;
-        mConnecting = false;
+        connected = false;
+        connecting = false;
     }
 
     // Interface -----------------------------------------------------------------------------------
 
     public void connect() {
-        if (DBG) Log.d(TAG, "connect(" + mAddress + ")");
+        if (DBG) Log.d(TAG, "connect(" + address + ")");
 
-        if (mConnecting) {
-            if (mConnectThread != null) {
-                mConnectThread.cancel();
-                mConnectThread = null;
-                mConnecting = false;
+        if (connecting) {
+            if (connectThread != null) {
+                connectThread.cancel();
+                connectThread = null;
+                connecting = false;
             }
         }
 
-        if (mConnectedThread != null) {
-            mConnectedThread.cancel();
-            mConnectedThread = null;
+        if (connectedThread != null) {
+            connectedThread.cancel();
+            connectedThread = null;
         }
 
-        mConnectThread = new ConnectThread(mBluetoothDevice);
-        mConnectThread.start();
+        connectThread = new ConnectThread(bluetoothDevice);
+        connectThread.start();
 
-        if (mStateHandler != null)
-            mStateHandler.sendEmptyMessage(BTStateEvent.CONNECTING);
+        if (stateHandler != null)
+            stateHandler.sendEmptyMessage(BTStateEvent.CONNECTING);
 
-        mConnecting = true;
+        connecting = true;
     }
 
-    public void send(byte[] data) {
+    public boolean send(byte[] data) {
         if (DBG) Log.d(TAG, "send()");
         ConnectedThread ct;
 
         synchronized (this) {
-            if (!mConnected) return;
-            ct = mConnectedThread;
+            if (!connected) return false;
+            ct = connectedThread;
         }
 
         ct.write(data);
+
+        return true;
     }
 
     public void disconnect() {
         if (DBG) Log.d(TAG, "disconnect()");
 
-        if (mConnecting) {
-            if (mConnectThread != null)
+        if (connecting) {
+            if (connectThread != null)
             {
-                mConnectThread.cancel();
-                mConnectThread = null;
-                mConnecting = false;
+                connectThread.cancel();
+                connectThread = null;
+                connecting = false;
             }
         }
 
-        if (mConnectedThread != null) {
-            mConnectedThread.close();
-            mConnectedThread = null;
+        if (connectedThread != null) {
+            connectedThread.close();
+            connectedThread = null;
         }
 
-        if (mConnected) {
-            if (mStateHandler != null)
-                mStateHandler.sendEmptyMessage(BTStateEvent.DISCONNECTED);
+        if (connected) {
+            if (stateHandler != null)
+                stateHandler.sendEmptyMessage(BTStateEvent.DISCONNECTED);
         }
 
-        mConnected = false;
+        connected = false;
     }
 
     // Setter & Getter -----------------------------------------------------------------------------
 
     public BluetoothClass getBluetoothClass() {
-        return mBluetoothDevice.getBluetoothClass();
+        return bluetoothDevice.getBluetoothClass();
     }
 
     public String getAddress() {
-        return mAddress;
+        return address;
     }
 
     public String getName() {
-        return mBluetoothDevice.getName();
+        return bluetoothDevice.getName();
     }
 
     public UUID[] getUUIDs() {
-        ParcelUuid[] parcels = mBluetoothDevice.getUuids();
+        ParcelUuid[] parcels = bluetoothDevice.getUuids();
 
         ArrayList<UUID> list = new ArrayList<UUID>();
 
@@ -176,7 +177,7 @@ public class BTDevice {
     }
 
     public boolean isConnected() {
-        return mConnected;
+        return connected;
     }
 
     // State Changers ------------------------------------------------------------------------------
@@ -184,46 +185,46 @@ public class BTDevice {
     private void connected(BluetoothSocket socket, BluetoothDevice device) {
         if (DBG) Log.d(TAG, "connected(" + socket + ", " + device + ")");
 
-        if (mConnectThread != null) {
-            mConnectThread.cancel();
-            mConnectThread = null;
+        if (connectThread != null) {
+            connectThread.cancel();
+            connectThread = null;
         }
 
-        if (mConnectedThread != null) {
-            mConnectedThread.cancel();
-            mConnectedThread = null;
+        if (connectedThread != null) {
+            connectedThread.cancel();
+            connectedThread = null;
         }
 
-        mConnectedThread = new ConnectedThread(socket);
-        mConnectedThread.start();
+        connectedThread = new ConnectedThread(socket);
+        connectedThread.start();
 
-        mConnected = true;
-        mConnecting = false;
+        connected = true;
+        connecting = false;
     }
 
     private void connectionLost() {
         if (DBG) Log.d(TAG, "connectionLost()");
-        if (mStateHandler != null)
-            mStateHandler.sendEmptyMessage(BTStateEvent.CONNECTION_LOST);
-        mConnected = false;
+        if (stateHandler != null)
+            stateHandler.sendEmptyMessage(BTStateEvent.CONNECTION_LOST);
+        connected = false;
     }
 
     private void connectionFailed() {
         if (DBG) Log.d(TAG, "connectionFailed()");
-        if (mStateHandler != null)
-            mStateHandler.sendEmptyMessage(BTStateEvent.CONNECTION_FAILED);
-        mConnected = false;
+        if (stateHandler != null)
+            stateHandler.sendEmptyMessage(BTStateEvent.CONNECTION_FAILED);
+        connected = false;
     }
 
     // Threads -------------------------------------------------------------------------------------
 
     private class ConnectThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final BluetoothDevice mmDevice;
+        private final BluetoothSocket bluetoothSocket;
+        private final BluetoothDevice bluetoothDevice;
 
         public ConnectThread(BluetoothDevice device) {
             if (DBG) Log.d(TAG, "ConnectThread()");
-            mmDevice = device;
+            bluetoothDevice = device;
             BluetoothSocket tmp = null;
 
             try {
@@ -232,21 +233,21 @@ public class BTDevice {
                 if (DBG) Log.d(TAG, "ConnectThread() Socket create() failed", e);
             }
 
-            mmSocket = tmp;
+            bluetoothSocket = tmp;
         }
 
         public void run() {
             if (DBG) Log.d(TAG, "BEGIN ConnectThread");
             setName("ConnectThread");
 
-            mBluetoothAdapter.cancelDiscovery();
+            bluetoothAdapter.cancelDiscovery();
 
             try {
-                mmSocket.connect();
+                bluetoothSocket.connect();
             } catch (IOException e) {
 
                 try {
-                    mmSocket.close();
+                    bluetoothSocket.close();
                 } catch (IOException e1) {
                     if (DBG) Log.d (TAG, "ConnectThread run() Socket close() failed", e1);
                 }
@@ -258,11 +259,11 @@ public class BTDevice {
 
             // Reset ConnectThread
             synchronized (BTDevice.this) {
-                mConnectThread = null;
+                connectThread = null;
             }
 
             // Start ConnectedThread
-            connected(mmSocket, mmDevice);
+            connected(bluetoothSocket, bluetoothDevice);
 
             if (DBG) Log.d(TAG, "END ConnectThread");
         }
@@ -270,26 +271,26 @@ public class BTDevice {
         public void cancel() {
             if (DBG) Log.d(TAG, "ConnectThread cancel()");
             try {
-                mmSocket.close();
+                bluetoothSocket.close();
             } catch (IOException e) {
                 if (DBG) Log.d(TAG, "ConnectThread cancel() Socket close() failed", e);
             }
         }
     }
 
-//##################################################################################################
+// ##################################################################################################
 
     private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
+        private final BluetoothSocket bluetoothSocket;
+        private final InputStream inputStream;
+        private final OutputStream outputStream;
 
-        private boolean mmConnected = false;
+        private boolean connected = false;
 
         public ConnectedThread(BluetoothSocket socket) {
             if (DBG) Log.d(TAG, "ConnectedThread()");
 
-            mmSocket = socket;
+            bluetoothSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
@@ -300,36 +301,37 @@ public class BTDevice {
                 if (DBG) Log.d(TAG, "Connected Thread() Socket getStream() failed", e);
             }
 
-            mmConnected = true;
+            connected = true;
 
-            mmInStream = tmpIn;
-            mmOutStream = tmpOut;
+            inputStream = tmpIn;
+            outputStream = tmpOut;
         }
 
         public void run() {
             if (DBG) Log.d(TAG, "BEGIN ConnectedThread");
             setName("ConnectedThread");
 
-            if (mStateHandler != null)
-                mStateHandler.sendEmptyMessage(BTStateEvent.CONNECTED);
+            if (stateHandler != null)
+                stateHandler.sendEmptyMessage(BTStateEvent.CONNECTED);
 
-            while (mmConnected) {
+            while (connected) {
                 try {
-                    int bytes = mmInStream.available();
+                    //TODO: Check if socket is still connected
+                    int bytes = inputStream.available();
 
                     if (bytes > 0) {
                         byte[] buffer = new byte[bytes];
-                        mmInStream.read(buffer);
+                        inputStream.read(buffer);
 
-                        if (mDataHandler != null) {
-                            mDataHandler.sendMessage(
-                                    mDataHandler.obtainMessage(BTDataEvent.DATA_RECEIVED, buffer)
+                        if (dataHandler != null) {
+                            dataHandler.sendMessage(
+                                    dataHandler.obtainMessage(BTDataEvent.DATA_RECEIVED, buffer)
                             );
                         }
                     }
                 } catch (IOException e) {
                     if (DBG) Log.d(TAG, "ConnectedThread run() inStream read() failed", e);
-                    if (mmConnected) {
+                    if (connected) {
                         // Only report connection loss if unintentional disconnect
                         connectionLost();
                     }
@@ -343,12 +345,12 @@ public class BTDevice {
         public void write(byte[] buffer) {
             if (DBG) Log.d(TAG, "ConnectedThread write()");
             try {
-                mmOutStream.write(buffer);
+                outputStream.write(buffer);
 
                 /*
-                if (mDataHandler != null) {
-                    mDataHandler.sendMessage(
-                            mDataHandler.obtainMessage(BTDataEvent.DATA_SENT, buffer)
+                if (dataHandler != null) {
+                    dataHandler.sendMessage(
+                            dataHandler.obtainMessage(BTDataEvent.DATA_SENT, buffer)
                     );
                 }
                 */
@@ -361,7 +363,7 @@ public class BTDevice {
         public void close() {
             if (DBG) Log.d(TAG, "ConnectedThread close()");
 
-            mmConnected = false;
+            connected = false;
 
             cancel();
         }
@@ -370,7 +372,7 @@ public class BTDevice {
             if (DBG) Log.d(TAG, "ConnectedThread cancel()");
 
             try {
-                mmSocket.close();
+                bluetoothSocket.close();
             } catch (IOException e) {
                 if (DBG) Log.d(TAG, "ConnectedThread cancel() Socket close() failed", e);
             }

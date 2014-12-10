@@ -5,7 +5,9 @@ import android.content.Context;
 import android.hardware.*;
 import android.hardware.Sensor;
 import android.os.Build;
-import android.os.HandlerThread;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 
 import java.util.List;
 
@@ -15,36 +17,42 @@ public class InternalSensorDevice
     private final static String TAG = "InternalSensorDevice";
     private final static boolean DBG = false;
 
-    private final SensorManager mSensorManager;
+    public final SensorManager sensorManager;
 
     public InternalSensorDevice(final Context context) {
         super(BluetoothAdapter.getDefaultAdapter().getAddress());
 
-        this.mDeviceName = Build.MODEL + " (Internal)";
-        mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        this.deviceName = Build.MODEL + " (Internal)";
+        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 
-        mConnected = (mSensorManager != null);
+        connected = (sensorManager != null);
     }
 
     public boolean initialize() {
-        List<Sensor> internalSensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+        List<Sensor> internalSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+
+        int id = 0;
 
         for (Sensor internalSensor : internalSensors) {
             if (internalSensor.getType() != Sensor.TYPE_ORIENTATION &&
                 internalSensor.getType() != Sensor.TYPE_ROTATION_VECTOR) {
-                mSensors.add(new InternalSensor(mSensorManager, internalSensor));
+                sensors.add(new InternalSensor(this, internalSensor, id++));
             }
         }
+
+        messageHandler.sendEmptyMessage(SensorEvent.INITIALIZED);
 
         return true;
     }
 
     public void connect() {
-
+        // InternalSensors are always connected
     }
 
     public void disconnect() {
-        for (in.konstant.sensors.Sensor mSensor : mSensors) {
+        // InternalSensors are always connected
+        // Use disconnect() to stop measurement of all sensors
+        for (in.konstant.sensors.Sensor mSensor : sensors) {
             mSensor.deactivate();
         }
     }
@@ -58,24 +66,22 @@ public class InternalSensorDevice
         return BluetoothAdapter.getDefaultAdapter().getName();
     }
 
-    public boolean getMeasurementValue(final int sensorId, final int measurementId) {
-        if (mConnected) {
+    public final Handler messageHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            if (DBG) Log.d(TAG, "handleMessage(" + msg.what + ")");
 
-            //TODO: Better Solution for different behaviour of InternalSensor?
-            float[] value = ((InternalSensor) mSensors.get(sensorId)).getValue(measurementId);
+            switch (msg.what) {
+                case SensorEvent.INITIALIZED:
+                    notifySensorDeviceEvent(SensorEvent.INITIALIZED);
+                    break;
+                case SensorEvent.VALUE:
+                    notifySensorValueEvent(getSensor(msg.arg1),
+                            msg.arg2,
+                            msg.getData().getFloatArray("VALUE"));
+                    break;
+            }
+        }
+    };
 
-            notifySensorValueEvent(mSensors.get(sensorId), measurementId, value);
-
-            return true;
-        } else
-            return false;
-    }
-
-    public boolean getMeasurementValue(final int sensorId, final int measurementId, final int interval) {
-        return false;
-    }
-
-    public void stopMeasuring() {
-
-    }
 }

@@ -4,45 +4,45 @@ import java.util.ArrayList;
 
 public abstract class SensorDevice {
 
-    protected String mAddress;
-    protected String mDeviceName;
-    protected boolean mConnected = false;
+    protected String address;
+    protected String deviceName;
+    protected boolean connected = false;
 
-    protected ArrayList<Sensor> mSensors;
-    protected ArrayList<SensorDeviceEventListener> mStateListeners;
-    protected ArrayList<SensorValueListener> mValueListeners;
+    protected ArrayList<Sensor> sensors;
+    protected ArrayList<SensorDeviceEventListener> stateListeners;
+    protected ArrayList<SensorValueListener> valueListeners;
 
     public SensorDevice(final String address) {
-        this.mAddress = address;
-        mSensors = new ArrayList<Sensor>();
-        mStateListeners = new ArrayList<SensorDeviceEventListener>();
-        mValueListeners = new ArrayList<SensorValueListener>();
+        this.address = address;
+        sensors = new ArrayList<Sensor>();
+        stateListeners = new ArrayList<SensorDeviceEventListener>();
+        valueListeners = new ArrayList<SensorValueListener>();
     }
 
     public boolean registerStateListener(final SensorDeviceEventListener listener) {
-        return mStateListeners.add(listener);
+        return stateListeners.add(listener);
     }
 
     public boolean unregisterStateListener(final SensorDeviceEventListener listener) {
-        return mStateListeners.remove(listener);
+        return stateListeners.remove(listener);
     }
 
     protected void notifySensorDeviceEvent(final int event) {
-        for (SensorDeviceEventListener listener : mStateListeners) {
+        for (SensorDeviceEventListener listener : stateListeners) {
             listener.onSensorDeviceEvent(this, event);
         }
     }
 
     public boolean registerValueListener(final SensorValueListener listener) {
-        return mValueListeners.add(listener);
+        return valueListeners.add(listener);
     }
 
     public boolean unregisterValueListener(final SensorValueListener listener) {
-        return mValueListeners.remove(listener);
+        return valueListeners.remove(listener);
     }
 
     protected void notifySensorValueEvent(final Sensor sensor, final int measurementId, final float[] value) {
-        for (SensorValueListener listener : mValueListeners) {
+        for (SensorValueListener listener : valueListeners) {
             listener.onSensorValueChanged(sensor, measurementId, value);
         }
     }
@@ -53,33 +53,28 @@ public abstract class SensorDevice {
     public abstract boolean quit();
 
     public boolean isConnected() {
-        return mConnected;
+        return connected;
     }
 
     abstract String getBluetoothName();
 
     public String getBluetoothAddress() {
-        return mAddress;
+        return address;
     }
 
     public String getDeviceName() {
-        return mDeviceName;
+        return deviceName;
     }
 
     public void setDeviceName(final String name) {
-        this.mDeviceName = name;
+        this.deviceName = name;
     }
 
     public int getNumberOfSensors() {
-        return mSensors.size();
+        return sensors.size();
     }
 
     public Sensor getSensor(final int id) {
-        return mSensors.get(id);
+        return sensors.get(id);
     }
-
-    public abstract boolean getMeasurementValue(final int sensorId, final int measurementId);
-    public abstract boolean getMeasurementValue(final int sensorId, final int measurementId, final int interval);
-
-    public abstract void stopMeasuring();
 }

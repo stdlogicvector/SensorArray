@@ -3,6 +3,8 @@ package in.konstant.sensors;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.os.Message;
 
 public class InternalSensor
         extends Sensor
@@ -11,21 +13,23 @@ public class InternalSensor
     private final static String TAG = "InternalSensor";
     private final static boolean DBG = false;
 
-    private android.hardware.Sensor mSensor;
-    private SensorManager mSensorManager;
+    private android.hardware.Sensor sensor;
+    private InternalSensorDevice sensorDevice;
 
-    private float[] lastValues;
-    private float timestamp;
+    private int activeMeasurementId;
 
     private int[] offsets;
 
-    public InternalSensor(SensorManager manager, android.hardware.Sensor sensor) {
-        super();
+    public InternalSensor(final InternalSensorDevice sensorDevice, final android.hardware.Sensor sensor, final int id) {
+        super(id, Type.GENERIC);
 
-        this.mSensor = sensor;
-        this.mSensorManager = manager;
+        this.sensorDevice = sensorDevice;
+        this.sensor = sensor;
 
         initializeMeasurements();
+
+        active = true;
+        activeMeasurementId = 0;
     }
 
     public String getName() {
@@ -33,37 +37,52 @@ public class InternalSensor
     }
 
     public String getPart() {
-        return mSensor.getVendor() + " " + mSensor.getName();
+        return sensor.getVendor() + " " + sensor.getName();
     }
 
     public void activate() {
-        mSensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_UI);
         active = true;
     }
 
     public void deactivate() {
+        stopMeasuring();
         active = false;
-        mSensorManager.unregisterListener(this);
     }
 
-    public float[] getValue(int id) {
-        if (active && id >= 0 && id < mMeasurements.size()) {
-            int size = mMeasurements.get(id).getSize();
-            float[] result = new float[size];
+    public boolean startMeasuring(final int measurementId, final int interval) {
+        if (active && measurementId < measurements.size()) {
+            activeMeasurementId = measurementId;
 
-            for (int v = offsets[id]; v < offsets[id] + size; ++v) {
-                result[v] = lastValues[v];
-            }
+            measuring = sensorDevice.sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_UI);
 
-            return result;
-        } else {
-            return null;
+        } else
+            measuring = false;
+
+        return measuring;
+    }
+
+    public void stopMeasuring() {
+        sensorDevice.sensorManager.unregisterListener(this);
+        measuring = false;
+    }
+
+    private float[] extractValue(final float[] values, final int id) {
+        int size = measurements.get(id).getSize();
+        float[] result = new float[size];
+
+        for (int v = offsets[id]; v < offsets[id] + size; ++v) {
+            result[v] = values[v];
         }
+
+        return result;
     }
 
     public void onSensorChanged(SensorEvent event) {
-        lastValues = event.values;
-        timestamp = event.timestamp;
+        Message msg = sensorDevice.messageHandler.obtainMessage(in.konstant.sensors.SensorEvent.VALUE, id, activeMeasurementId);
+        Bundle msgData = new Bundle();
+        msgData.putFloatArray("VALUE", extractValue(event.values, activeMeasurementId));
+        msg.setData(msgData);
+        sensorDevice.messageHandler.sendMessage(msg);
     }
 
     public void onAccuracyChanged(android.hardware.Sensor sensor, int accuracy) {
@@ -71,10 +90,10 @@ public class InternalSensor
     }
 
     private void initializeMeasurements() {
-        Range[] ranges = {new Range(0, mSensor.getMaximumRange(), 1)};
+        Range[] ranges = {new Range(0, sensor.getMaximumRange(), 1)};
         Subunit[] subunits;
 
-        switch (mSensor.getType()) {
+        switch (sensor.getType()) {
             case android.hardware.Sensor.TYPE_GYROSCOPE_UNCALIBRATED:
 
                 type = Type.ROTATION;
@@ -87,18 +106,18 @@ public class InternalSensor
                 subunits[0] = new Subunit(BaseUnit.DEGREE, +1);
                 subunits[1] = new Subunit(BaseUnit.SECOND, -1);
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Angular Rate Vector",
                                 3,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Angular Velocity", "rad/s", Prefix.NO_PREFIX, subunits))
                 );
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Drift Vector",
                                 3,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Angular Velocity", "rad/s", Prefix.NO_PREFIX, subunits))
                 );
@@ -117,18 +136,18 @@ public class InternalSensor
                 subunits[1] = new Subunit(BaseUnit.SECOND, -2);
                 subunits[2] = new Subunit(BaseUnit.AMPERE, -1);
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Magnetic Flux Vector",
                                 3,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Tesla", "T", Prefix.MICRO, subunits))
                 );
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Drift Vector",
                                 3,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Tesla", "T", Prefix.MICRO, subunits))
                 );
@@ -147,10 +166,10 @@ public class InternalSensor
                 subunits[0] = new Subunit(BaseUnit.METER, +1);
                 subunits[1] = new Subunit(BaseUnit.SECOND, -2);
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Acceleration Vector",
                                 3,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Acceleration", "g", Prefix.NO_PREFIX, subunits))
                 );
@@ -168,10 +187,10 @@ public class InternalSensor
                 subunits[1] = new Subunit(BaseUnit.SECOND, -2);
                 subunits[2] = new Subunit(BaseUnit.AMPERE, -1);
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Magnetic Flux Vector",
                                 3,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Tesla", "T", Prefix.MICRO, subunits))
                 );
@@ -188,10 +207,10 @@ public class InternalSensor
                 subunits[0] = new Subunit(BaseUnit.DEGREE, +1);
                 subunits[1] = new Subunit(BaseUnit.SECOND, -1);
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Angular Rate Vector",
                                 3,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Angular Velocity", "rad/s", Prefix.NO_PREFIX, subunits))
                 );
@@ -208,10 +227,10 @@ public class InternalSensor
                 subunits[0] = new Subunit(BaseUnit.CANDELA, +1);
                 subunits[1] = new Subunit(BaseUnit.METER, -2);
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Illuminance",
                                 1,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Lux", "lx", Prefix.NO_PREFIX, subunits))
                 );
@@ -227,10 +246,10 @@ public class InternalSensor
                 subunits = new Subunit[1];
                 subunits[0] = new Subunit(BaseUnit.KELVIN, +1);
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Ambient Temperature",
                                 1,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Celsius", "°C", Prefix.NO_PREFIX, subunits))
                 );
@@ -246,10 +265,10 @@ public class InternalSensor
                 subunits = new Subunit[1];
                 subunits[0] = new Subunit(BaseUnit.METER, +1);
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Proximity",
                                 1,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Meter", "m", Prefix.CENTI, subunits))
                 );
@@ -267,10 +286,10 @@ public class InternalSensor
                 subunits[1] = new Subunit(BaseUnit.METER, -1);
                 subunits[2] = new Subunit(BaseUnit.SECOND, -2);
 
-                mMeasurements.add(new Measurement(
+                measurements.add(new Measurement(
                                 "Atmospheric Pressure",
                                 1,
-                                mSensor.getMinDelay(),
+                                sensor.getMinDelay(),
                                 ranges,
                                 new Unit("Bar", "Bar", Prefix.MILLI, subunits))
                 );

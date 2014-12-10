@@ -22,7 +22,8 @@ public class Measurement {
     public void setRange(final int range) {
         if (range >= 0 && range < ranges.length) {
             currentRange = range;
-        }
+        } else
+            throw new IndexOutOfBoundsException("Range ID not available.");
     }
 
     public String getName() {
