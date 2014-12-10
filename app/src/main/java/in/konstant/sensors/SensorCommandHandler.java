@@ -160,7 +160,7 @@ public class SensorCommandHandler
 //--------------------------------------------
 
     public int getNrOfSensors() {
-        String cmd = buildCommand(CMD.GET_NO_SENSORS, '\0', '\0', '\0');
+        String cmd = buildCommand(CMD.GET_NO_SENSORS);
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_NO_SENSORS)) {
@@ -171,7 +171,7 @@ public class SensorCommandHandler
     }
 
     public ExternalSensor getSensor(final int sensorId) {
-        String cmd = buildCommand(CMD.GET_SENSOR, (char)(sensorId + '0'), '\0', '\0');
+        String cmd = buildCommand(CMD.GET_SENSOR, (char)(sensorId + '0'));
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_SENSOR)) {
@@ -186,11 +186,11 @@ public class SensorCommandHandler
     }
 
     public int getNrOfMeasurements(final int sensorId) {
-        String cmd = buildCommand(CMD.GET_NO_MEAS, (char)(sensorId + '0'), '\0', '\0');
+        String cmd = buildCommand(CMD.GET_NO_MEAS, (char)(sensorId + '0'));
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_NO_MEAS)) {
-            return (int)(result[2].charAt(0)) - '0';
+            return (result[2].charAt(0) - '0');
         } else
             return 0;
         //TODO: Throw Exception
@@ -199,8 +199,7 @@ public class SensorCommandHandler
     public Measurement getMeasurement(final int sensorId, final int measurementId) {
         String cmd = buildCommand(CMD.GET_SENSOR_MEAS,
                                   (char)(sensorId + '0'),
-                                  (char)(measurementId + '0'),
-                                  '\0');
+                                  (char)(measurementId + '0'));
 
         String[] result = sendCommand(cmd);
 
@@ -209,7 +208,7 @@ public class SensorCommandHandler
             Unit unit = new Unit(
                     result[6],
                     result[7],
-                    Prefix.fromInteger((int)(result[8].charAt(0)) - '0'),
+                    Prefix.fromInteger(result[8].charAt(0) - '0'),
                     Subunit.fromString(result[9]));
 
             ArrayList<Range> ranges = new ArrayList<Range>();
@@ -226,7 +225,7 @@ public class SensorCommandHandler
 
             return new Measurement(
                     result[3],
-                    (int)(result[4].charAt(0)) - '0',
+                    result[4].charAt(0) - '0',
                     ASCII85.decodeToInt(result[5]),
                     ranges.toArray(new Range[ranges.size()]),
                     unit
@@ -239,15 +238,14 @@ public class SensorCommandHandler
     public float[] getSensorValue(final int sensorId, final int measurementId) {
         String cmd = buildCommand(CMD.GET_SENSOR_VALUE,
                 (char)(sensorId + '0'),
-                (char)(measurementId + '0'),
-                '\0');
+                (char)(measurementId + '0'));
 
         String[] result = sendCommand(cmd);
 
         if (result[0].equals("" + CMD.GET_SENSOR_VALUE)) {
 
-            int range = Integer.parseInt(result[3]);
-            int size = Integer.parseInt(result[4]);
+            int range = result[3].charAt(0) - '0';
+            int size = result[4].charAt(0) - '0';
 
             float[] value = new float[size];
 

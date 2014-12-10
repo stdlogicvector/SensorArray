@@ -5,6 +5,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import in.konstant.BT.BTDevice;
 
 public class ExternalSensorDevice
@@ -15,6 +18,9 @@ public class ExternalSensorDevice
 
     private BTDevice btDevice;
     private SensorCommandHandler CommandHandler;
+
+    Timer timer;
+    TimerTask timerTask;
 
     public ExternalSensorDevice(String address) {
         super(address);
@@ -73,6 +79,7 @@ public class ExternalSensorDevice
     }
 
     public void disconnect() {
+        stopMeasuring();
         btDevice.disconnect();
     }
 
@@ -87,9 +94,38 @@ public class ExternalSensorDevice
         return btDevice.getName();
     }
 
+
+    private Runnable getValueGetter(final int sensorId, final int measurementId) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                float[] value = CommandHandler.getSensorValue(sensorId, measurementId);
+
+                Message msg = messageHandler.obtainMessage(SensorEvent.VALUE, sensorId, measurementId);
+                Bundle msgData = new Bundle();
+                msgData.putFloatArray("VALUE", value);
+                msg.setData(msgData);
+                messageHandler.sendMessage(msg);
+            }
+        };
+    }
+
     public boolean getMeasurementValue(final int sensorId, final int measurementId) {
         if (mConnected) {
-            Runnable valueGetter = new Runnable() {
+            new Thread(getValueGetter(sensorId, measurementId)).start();
+
+            return true;
+        } else
+            return false;
+    }
+
+    public boolean getMeasurementValue(final int sensorId, final int measurementId, final int interval) {
+        if (mConnected) {
+
+            stopMeasuring();
+
+            timer = new Timer();
+            timerTask = new TimerTask() {
                 @Override
                 public void run() {
                     float[] value = CommandHandler.getSensorValue(sensorId, measurementId);
@@ -102,11 +138,18 @@ public class ExternalSensorDevice
                 }
             };
 
-            new Thread(valueGetter).start();
+            timer.schedule(timerTask, interval, interval);
 
             return true;
         } else
             return false;
+    }
+
+    public void stopMeasuring() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
     }
 
     private final Handler messageHandler = new Handler() {

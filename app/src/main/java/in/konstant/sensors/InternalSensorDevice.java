@@ -70,4 +70,12 @@ public class InternalSensorDevice
         } else
             return false;
     }
+
+    public boolean getMeasurementValue(final int sensorId, final int measurementId, final int interval) {
+        return false;
+    }
+
+    public void stopMeasuring() {
+
+    }
 }

@@ -4,6 +4,7 @@ import android.app.Activity;
 
 import android.app.ActionBar;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
@@ -35,7 +36,7 @@ public class MainActivity extends Activity
     SensorArray sensorArray;
 
     private NavigationDrawerFragment mNavigationDrawerFragment;
-    private CharSequence mTitle;    // Last screen title. For use in {@link #restoreActionBar()}.
+    private Fragment lastFragment;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -51,7 +52,6 @@ public class MainActivity extends Activity
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getFragmentManager().findFragmentById(R.id.navigation_drawer);
-        mTitle = getTitle();
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
@@ -89,20 +89,36 @@ public class MainActivity extends Activity
     public void onNavigationDrawerItemSelected(final int group, final int child) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, SensorFragment.getInstance(group, child))
-                .commit();
+        Fragment fragment = fragmentManager.findFragmentByTag("sensor_" + group + "_" + child);
+
+        // Falls das Fragment noch nicht hinzugefuegt wurde -> hinzufuegen
+        if (fragment == null) {
+            fragment = SensorFragment.getInstance(group, child);
+            fragmentManager.beginTransaction()
+                    .add(R.id.container, fragment, "sensor_" + group + "_" + child)
+                    .commit();
+        }
+
+        // Falls schon ein Fragment angezeigt wird -> dieses ausblenden
+        if (lastFragment != null) {
+            fragmentManager.beginTransaction().hide(lastFragment).commit();
+            Log.d("SensorFragment", "hiding lastFragment " + lastFragment.getId());
+        }
+
+        // Das neue Fragment anzeigen
+        fragmentManager.beginTransaction().show(fragment).commit();
+        lastFragment = fragment;
+        Log.d("SensorFragment", "setting lastFragment to " + lastFragment.getId());
     }
 
     public void onFragmentCreated(final String title) {
-        mTitle = title;
+
     }
 
     public void restoreActionBar() {
         ActionBar actionBar = getActionBar();
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
         actionBar.setDisplayShowTitleEnabled(true);
-        //actionBar.setTitle(mTitle);
     }
 
     @Override

@@ -150,13 +150,6 @@ public class MeasurementFragment
                     enableOnClick(v);
                 }
             });
-
-            ((Button) rootView.findViewById(R.id.btGetMeasurementValue)).setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    getValueOnClick(v);
-                }
-            });
-
         }
 
         return rootView;
@@ -165,16 +158,12 @@ public class MeasurementFragment
     public void enableOnClick(View v) {
         if (sensor.isActive()) {
             ((Button) v).setText("Enable");
+            sensorDevice.stopMeasuring();
             sensor.deactivate();
         } else {
             sensor.activate();
+            sensorDevice.getMeasurementValue(sensorNumber, measurementNumber, 1000);
             ((Button) v).setText("Disable");
-        }
-    }
-
-    public void getValueOnClick(View v) {
-        if (sensor.isActive()) {
-            sensorDevice.getMeasurementValue(sensorNumber, measurementNumber);
         }
     }
 

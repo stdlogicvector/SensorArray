@@ -79,4 +79,7 @@ public abstract class SensorDevice {
     }
 
     public abstract boolean getMeasurementValue(final int sensorId, final int measurementId);
+    public abstract boolean getMeasurementValue(final int sensorId, final int measurementId, final int interval);
+
+    public abstract void stopMeasuring();
 }
