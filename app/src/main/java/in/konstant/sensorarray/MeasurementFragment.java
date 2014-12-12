@@ -1,6 +1,7 @@
 package in.konstant.sensorarray;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -12,6 +13,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.androidplot.xy.BoundaryMode;
+import com.androidplot.xy.LineAndPointFormatter;
+import com.androidplot.xy.SimpleXYSeries;
+import com.androidplot.xy.XYPlot;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import in.konstant.R;
@@ -24,6 +32,8 @@ import in.konstant.sensors.SensorValueListener;
 public class MeasurementFragment
         extends Fragment
         implements SensorValueListener {
+
+    private static final int PLOT_HISTORY_SIZE = 30;
 
     private static final String ARG_DEVICE_NUMBER = "device_number";
     private static final String ARG_SENSOR_NUMBER = "sensor_number";
@@ -42,6 +52,9 @@ public class MeasurementFragment
 
     private Activity activity;
     private TextView value;
+
+    private XYPlot valuePlot;
+    private ArrayList<SimpleXYSeries> valueSeries;
 
     // Returns a new instance of this fragment for the given sensor
     public static MeasurementFragment getInstance(int deviceNumber, int sensorNumber, int measurementNumber) {
@@ -145,6 +158,8 @@ public class MeasurementFragment
             value = ((TextView) rootView.findViewById(R.id.tvMeasurementValue));
             value.setTypeface(tf);
 
+            initPlot(rootView);
+
             ((Button) rootView.findViewById(R.id.btEnableMeasurement)).setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
                     enableOnClick(v);
@@ -153,6 +168,36 @@ public class MeasurementFragment
         }
 
         return rootView;
+    }
+
+    private void initPlot(View rootView) {
+        valuePlot = (XYPlot) rootView.findViewById(R.id.apMeasurementPlot);
+        valueSeries = new ArrayList<SimpleXYSeries>();
+
+        valuePlot.setRangeBoundaries(measurement.getCurrentRange().getMin(),
+                measurement.getCurrentRange().getMax(),
+                BoundaryMode.FIXED);
+
+        valuePlot.setDomainBoundaries(0, PLOT_HISTORY_SIZE, BoundaryMode.FIXED);
+
+        for (int s = 0; s < measurement.getSize(); s++) {
+            SimpleXYSeries series = new SimpleXYSeries("[" + s + "]");
+
+            series.useImplicitXVals();
+
+            valueSeries.add(series);
+
+            valuePlot.addSeries(series, new LineAndPointFormatter(Color.RED, Color.GREEN, Color.TRANSPARENT, null));
+        }
+
+        valuePlot.setDomainStepValue(4);
+        valuePlot.setTicksPerRangeLabel(3);
+
+        valuePlot.setDomainLabel("Sample");
+        valuePlot.getDomainLabelWidget().pack();
+
+        valuePlot.setRangeLabel(measurement.getUnit().getSymbol());
+        valuePlot.getRangeLabelWidget().pack();
     }
 
     public void enableOnClick(View v) {
@@ -170,7 +215,21 @@ public class MeasurementFragment
     public void onSensorValueChanged(final Sensor sensor, final int measurementId, final float[] value) {
         this.value.setText("");
 
-        for (int n = 0; n < value.length; n++)
-            this.value.append("" + value[n] + "\n");
+        if (valueSeries.get(0).size() > PLOT_HISTORY_SIZE) {
+            for (SimpleXYSeries series:valueSeries)
+                series.removeFirst();
+        }
+
+        int n = 0;
+
+        for (SimpleXYSeries series:valueSeries) {
+            if (n < value.length) {
+                this.value.append("" + value[n] + " ");
+                valueSeries.get(n).addLast(null, value[n]);
+            }
+            n++;
+        }
+
+        valuePlot.redraw();
     }
 }
