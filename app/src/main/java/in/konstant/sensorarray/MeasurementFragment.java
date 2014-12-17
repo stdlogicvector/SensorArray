@@ -11,16 +11,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.androidplot.Plot;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
 
 import java.lang.reflect.Array;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.NoSuchElementException;
 
 import in.konstant.R;
 import in.konstant.sensors.Measurement;
@@ -33,7 +37,7 @@ public class MeasurementFragment
         extends Fragment
         implements SensorValueListener {
 
-    private static final int PLOT_HISTORY_SIZE = 30;
+    private static final int PLOT_HISTORY_SIZE = 50;
 
     private static final String ARG_DEVICE_NUMBER = "device_number";
     private static final String ARG_SENSOR_NUMBER = "sensor_number";
@@ -56,7 +60,7 @@ public class MeasurementFragment
     private XYPlot valuePlot;
     private ArrayList<SimpleXYSeries> valueSeries;
 
-    // Returns a new instance of this fragment for the given sensor
+    // Returns a new instance of this fragment for the given measurement
     public static MeasurementFragment getInstance(int deviceNumber, int sensorNumber, int measurementNumber) {
         Integer key = (deviceNumber << 16) + (sensorNumber << 8) + measurementNumber;
 
@@ -152,6 +156,7 @@ public class MeasurementFragment
             ((TextView) rootView.findViewById(R.id.tvMeasurementUnitName)).setText(unitDesc);
             ((TextView) rootView.findViewById(R.id.tvMeasurementUnitSubunits)).setText(SIunit);
             ((TextView) rootView.findViewById(R.id.tvMeasurementRange)).setText(range);
+            ((ImageView) rootView.findViewById(R.id.icMeasurementIcon)).setImageResource(measurement.getType().icon());
 
             Typeface tf = Typeface.createFromAsset(activity.getAssets(), "fonts/pocket_calculator.ttf");
 
@@ -159,12 +164,6 @@ public class MeasurementFragment
             value.setTypeface(tf);
 
             initPlot(rootView);
-
-            ((Button) rootView.findViewById(R.id.btEnableMeasurement)).setOnClickListener(new View.OnClickListener() {
-                public void onClick(View v) {
-                    enableOnClick(v);
-                }
-            });
         }
 
         return rootView;
@@ -176,9 +175,12 @@ public class MeasurementFragment
 
         valuePlot.setRangeBoundaries(measurement.getCurrentRange().getMin(),
                 measurement.getCurrentRange().getMax(),
-                BoundaryMode.FIXED);
+                BoundaryMode.AUTO);
 
         valuePlot.setDomainBoundaries(0, PLOT_HISTORY_SIZE, BoundaryMode.FIXED);
+
+        int[] light_colors = rootView.getContext().getResources().getIntArray(R.array.graph_colors_light);
+        int[] dark_colors = rootView.getContext().getResources().getIntArray(R.array.graph_colors_dark);
 
         for (int s = 0; s < measurement.getSize(); s++) {
             SimpleXYSeries series = new SimpleXYSeries("[" + s + "]");
@@ -187,28 +189,47 @@ public class MeasurementFragment
 
             valueSeries.add(series);
 
-            valuePlot.addSeries(series, new LineAndPointFormatter(Color.RED, Color.GREEN, Color.TRANSPARENT, null));
+            valuePlot.addSeries(series, new LineAndPointFormatter(light_colors[s%3], dark_colors[s%3], Color.TRANSPARENT, null));
         }
 
-        valuePlot.setDomainStepValue(4);
+        valuePlot.setDomainStepValue(5);
         valuePlot.setTicksPerRangeLabel(3);
 
         valuePlot.setDomainLabel("Sample");
+        valuePlot.setDomainValueFormat(new DecimalFormat("#"));
         valuePlot.getDomainLabelWidget().pack();
 
-        valuePlot.setRangeLabel(measurement.getUnit().getSymbol());
+        valuePlot.setRangeLabel(measurement.getUnit().getName() + " [" + measurement.getUnit().toString() + "]");
+        valuePlot.setRangeValueFormat(new DecimalFormat("#"));
         valuePlot.getRangeLabelWidget().pack();
+
+        valuePlot.getGraphWidget().getBackgroundPaint().setColor(Color.TRANSPARENT);
+        valuePlot.getGraphWidget().getGridBackgroundPaint().setColor(Color.TRANSPARENT);
+        valuePlot.setBackgroundColor(Color.TRANSPARENT);
+        valuePlot.setBorderStyle(XYPlot.BorderStyle.NONE, null, null);
+        valuePlot.setPlotMargins(5, 0, 0, 0);
+        valuePlot.setPlotPadding(0, 0, 0, 0);
+        valuePlot.setGridPadding(15, 5, 10, 5);
+
+        valuePlot.getLegendWidget().setVisible(false);
+
+        valuePlot.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                enableOnClick(v);
+            }
+        });
+
+        valuePlot.setMarkupEnabled(false);
     }
 
     public void enableOnClick(View v) {
         if (sensor.isMeasuring()) {
-            ((Button) v).setText("Enable");
             sensor.stopMeasuring();
             sensor.deactivate();
         } else {
             sensor.activate();
-            if (sensor.startMeasuring(measurementNumber, 500))
-                ((Button) v).setText("Disable");
+            if (sensor.startMeasuring(measurementNumber, 500));
         }
     }
 
@@ -217,7 +238,9 @@ public class MeasurementFragment
 
         if (valueSeries.get(0).size() > PLOT_HISTORY_SIZE) {
             for (SimpleXYSeries series:valueSeries)
+            try {
                 series.removeFirst();
+            } catch (NoSuchElementException e) {}
         }
 
         int n = 0;

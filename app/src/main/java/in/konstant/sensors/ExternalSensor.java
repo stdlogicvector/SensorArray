@@ -17,11 +17,11 @@ public class ExternalSensor extends Sensor {
     private TimerTask measurementTimerTask;
 
     public ExternalSensor(final int id,
-                          final Type type,
+                          final SensorType sensorType,
                           final String name,
                           final String part,
                           ExternalSensorDevice sensorDevice) {
-        super(id, type);
+        super(id, sensorType);
 
         this.sensorDevice = sensorDevice;
 

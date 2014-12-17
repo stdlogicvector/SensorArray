@@ -2,7 +2,7 @@ package in.konstant.sensors;
 
 import in.konstant.R;
 
-public enum Type {
+public enum SensorType {
     GENERIC("Sensor", R.drawable.ic_generic),
     ACCELERATION("Accelerometer",R.drawable.ic_acceleration),
     ADC("AD Converter", R.drawable.ic_adc),
@@ -27,7 +27,7 @@ public enum Type {
     private final String name;
     private final int iconId;
 
-    Type(final String name, final int iconId) {
+    SensorType(final String name, final int iconId) {
         this.name = name;
         this.iconId = iconId;
     }
@@ -40,9 +40,9 @@ public enum Type {
         return this.iconId;
     }
 
-    private static final Type[] enumValues = Type.values();
+    private static final SensorType[] enumValues = SensorType.values();
 
-    public static Type fromInteger(final int id) {
+    public static SensorType fromInteger(final int id) {
         return enumValues[id];
     }
 }

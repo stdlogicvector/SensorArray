@@ -5,13 +5,13 @@ import java.util.ArrayList;
 public abstract class Sensor {
 
     final int id;
-    Type type;
+    SensorType type;
     ArrayList<Measurement> measurements;
 
     boolean active = false;
     boolean measuring = false;
 
-    public Sensor(final int id, final Type type) {
+    public Sensor(final int id, final SensorType type) {
         this.id = id;
         this.type = type;
 
@@ -38,7 +38,7 @@ public abstract class Sensor {
         return measurements.get(id);
     }
 
-    public Type getType() {
+    public SensorType getType() {
         return this.type;
     }
 

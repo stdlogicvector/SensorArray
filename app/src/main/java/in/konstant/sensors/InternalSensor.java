@@ -21,7 +21,7 @@ public class InternalSensor
     private int[] offsets;
 
     public InternalSensor(final InternalSensorDevice sensorDevice, final android.hardware.Sensor sensor, final int id) {
-        super(id, Type.GENERIC);
+        super(id, SensorType.GENERIC);
 
         this.sensorDevice = sensorDevice;
         this.sensor = sensor;
@@ -90,13 +90,13 @@ public class InternalSensor
     }
 
     private void initializeMeasurements() {
-        Range[] ranges = {new Range(0, sensor.getMaximumRange(), 1)};
+        Range[] ranges = new Range[1];
         Subunit[] subunits;
 
         switch (sensor.getType()) {
             case android.hardware.Sensor.TYPE_GYROSCOPE_UNCALIBRATED:
 
-                type = Type.ROTATION;
+                type = SensorType.ROTATION;
 
                 offsets = new int[2];
                 offsets[0] = 0;
@@ -106,8 +106,11 @@ public class InternalSensor
                 subunits[0] = new Subunit(BaseUnit.DEGREE, +1);
                 subunits[1] = new Subunit(BaseUnit.SECOND, -1);
 
+                ranges[0] = new Range(-sensor.getMaximumRange(), sensor.getMaximumRange(), 1);
+
                 measurements.add(new Measurement(
                                 "Angular Rate Vector",
+                                MeasurementType.GENERIC,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -116,6 +119,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Drift Vector",
+                                MeasurementType.GENERIC,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -125,7 +129,7 @@ public class InternalSensor
 
             case android.hardware.Sensor.TYPE_MAGNETIC_FIELD_UNCALIBRATED:
 
-                type = Type.MAGNETIC;
+                type = SensorType.MAGNETIC;
 
                 offsets = new int[2];
                 offsets[0] = 0;
@@ -136,8 +140,11 @@ public class InternalSensor
                 subunits[1] = new Subunit(BaseUnit.SECOND, -2);
                 subunits[2] = new Subunit(BaseUnit.AMPERE, -1);
 
+                ranges[0] = new Range(-sensor.getMaximumRange(), sensor.getMaximumRange(), 1);
+
                 measurements.add(new Measurement(
                                 "Magnetic Flux Vector",
+                                MeasurementType.GENERIC,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -146,6 +153,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Drift Vector",
+                                MeasurementType.GENERIC,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -157,7 +165,7 @@ public class InternalSensor
             case android.hardware.Sensor.TYPE_GRAVITY:
             case android.hardware.Sensor.TYPE_ACCELEROMETER:
 
-                type = Type.ACCELERATION;
+                type = SensorType.ACCELERATION;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -166,8 +174,11 @@ public class InternalSensor
                 subunits[0] = new Subunit(BaseUnit.METER, +1);
                 subunits[1] = new Subunit(BaseUnit.SECOND, -2);
 
+                ranges[0] = new Range(-sensor.getMaximumRange(), sensor.getMaximumRange(), 1);
+
                 measurements.add(new Measurement(
                                 "Acceleration Vector",
+                                MeasurementType.GENERIC,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -177,7 +188,7 @@ public class InternalSensor
 
             case android.hardware.Sensor.TYPE_MAGNETIC_FIELD:
 
-                type = Type.MAGNETIC;
+                type = SensorType.MAGNETIC;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -187,8 +198,11 @@ public class InternalSensor
                 subunits[1] = new Subunit(BaseUnit.SECOND, -2);
                 subunits[2] = new Subunit(BaseUnit.AMPERE, -1);
 
+                ranges[0] = new Range(-sensor.getMaximumRange(), sensor.getMaximumRange(), 1);
+
                 measurements.add(new Measurement(
                                 "Magnetic Flux Vector",
+                                MeasurementType.GENERIC,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -198,7 +212,7 @@ public class InternalSensor
 
             case android.hardware.Sensor.TYPE_GYROSCOPE:
 
-                type = Type.ROTATION;
+                type = SensorType.ROTATION;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -207,8 +221,11 @@ public class InternalSensor
                 subunits[0] = new Subunit(BaseUnit.DEGREE, +1);
                 subunits[1] = new Subunit(BaseUnit.SECOND, -1);
 
+                ranges[0] = new Range(-sensor.getMaximumRange(), sensor.getMaximumRange(), 1);
+
                 measurements.add(new Measurement(
                                 "Angular Rate Vector",
+                                MeasurementType.GENERIC,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -218,7 +235,7 @@ public class InternalSensor
 
             case android.hardware.Sensor.TYPE_LIGHT:
 
-                type = Type.LIGHT;
+                type = SensorType.LIGHT;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -227,8 +244,11 @@ public class InternalSensor
                 subunits[0] = new Subunit(BaseUnit.CANDELA, +1);
                 subunits[1] = new Subunit(BaseUnit.METER, -2);
 
+                ranges[0] = new Range(0, sensor.getMaximumRange(), 1);
+
                 measurements.add(new Measurement(
                                 "Illuminance",
+                                MeasurementType.GENERIC,
                                 1,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -238,7 +258,7 @@ public class InternalSensor
 
             case android.hardware.Sensor.TYPE_AMBIENT_TEMPERATURE:
 
-                type = Type.TEMPERATURE;
+                type = SensorType.TEMPERATURE;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -246,8 +266,11 @@ public class InternalSensor
                 subunits = new Subunit[1];
                 subunits[0] = new Subunit(BaseUnit.KELVIN, +1);
 
+                ranges[0] = new Range(0, sensor.getMaximumRange(), 1);
+
                 measurements.add(new Measurement(
                                 "Ambient Temperature",
+                                MeasurementType.GENERIC,
                                 1,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -257,7 +280,7 @@ public class InternalSensor
 
             case android.hardware.Sensor.TYPE_PROXIMITY:
 
-                type = Type.DISTANCE;
+                type = SensorType.DISTANCE;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -265,8 +288,11 @@ public class InternalSensor
                 subunits = new Subunit[1];
                 subunits[0] = new Subunit(BaseUnit.METER, +1);
 
+                ranges[0] = new Range(0, sensor.getMaximumRange(), 1);
+
                 measurements.add(new Measurement(
                                 "Proximity",
+                                MeasurementType.GENERIC,
                                 1,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -276,7 +302,7 @@ public class InternalSensor
 
             case android.hardware.Sensor.TYPE_PRESSURE:
 
-                type = Type.PRESSURE;
+                type = SensorType.PRESSURE;
 
                 offsets = new int[1];
                 offsets[0] = 0;
@@ -286,8 +312,11 @@ public class InternalSensor
                 subunits[1] = new Subunit(BaseUnit.METER, -1);
                 subunits[2] = new Subunit(BaseUnit.SECOND, -2);
 
+                ranges[0] = new Range(0, sensor.getMaximumRange(), 1);
+
                 measurements.add(new Measurement(
                                 "Atmospheric Pressure",
+                                MeasurementType.GENERIC,
                                 1,
                                 sensor.getMinDelay(),
                                 ranges,

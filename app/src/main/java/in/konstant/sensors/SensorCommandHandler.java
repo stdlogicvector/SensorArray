@@ -3,7 +3,6 @@ package in.konstant.sensors;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -185,7 +184,7 @@ public class SensorCommandHandler
         if (result[0].equals("" + CMD.GET_SENSOR)) {
             return new ExternalSensor(
                         (int)(result[1].charAt(0)) - '0',
-                        Type.fromInteger((int)(result[2].charAt(0)) - '0'),
+                        SensorType.fromInteger((int) (result[2].charAt(0)) - '0'),
                         result[3],
                         result[4],
                         sensorDevice);
@@ -236,6 +235,7 @@ public class SensorCommandHandler
 
             return new Measurement(
                     result[3],
+                    MeasurementType.GENERIC,
                     result[4].charAt(0) - '0',
                     ASCII85.decodeToInt(result[5]),
                     ranges.toArray(new Range[ranges.size()]),

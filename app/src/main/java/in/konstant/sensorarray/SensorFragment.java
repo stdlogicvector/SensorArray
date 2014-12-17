@@ -28,7 +28,6 @@ public class SensorFragment extends Fragment {
 
     private static final String ARG_DEVICE_NUMBER = "device_number";
     private static final String ARG_SENSOR_NUMBER = "sensor_number";
-    private static final String ARG_PAGER_ID      = "pager_id";
 
     private static final HashMap<Integer, SensorFragment> instances = new HashMap<Integer, SensorFragment>();
 
@@ -55,12 +54,9 @@ public class SensorFragment extends Fragment {
         if (instance == null) {
             instance = new SensorFragment();
 
-            int id = generateViewId();
-
             Bundle args = new Bundle();
             args.putInt(ARG_DEVICE_NUMBER, deviceNumber);
             args.putInt(ARG_SENSOR_NUMBER, sensorNumber);
-            args.putInt(ARG_PAGER_ID, id);
             instance.setArguments(args);
 
             instances.put(key, instance);
@@ -83,11 +79,7 @@ public class SensorFragment extends Fragment {
 
         this.deviceNumber = getArguments().getInt(ARG_DEVICE_NUMBER);
         this.sensorNumber = getArguments().getInt(ARG_SENSOR_NUMBER);
-        this.pagerId = getArguments().getInt(ARG_PAGER_ID);
-
-        //TODO: generateViewID does not work any better than ID based on deviceNumber
-
-        //pagerId = R.id.pgSensorMeasurements + ((deviceNumber + 1) << 8) + (sensorNumber + 1);
+        this.pagerId = 0x00FFFFFF - ((deviceNumber + 1) << 8) - (sensorNumber + 1);
 
         sensorArray = SensorArray.getInstance();
 
@@ -171,25 +163,5 @@ public class SensorFragment extends Fragment {
             return sensorArray.getDevice(deviceNumber).getSensor(sensorNumber).getNumberOfMeasurements();
         }
 
-    }
-
-    /**
-     * Generate a value suitable for use in {@link #setId(int)}.
-     * This value will not collide with ID values generated at build time by apt for R.id.
-     *
-     * @return a generated ID value
-     */
-    private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
-
-    public static int generateViewId() {
-        for (;;) {
-            final int result = sNextGeneratedId.get();
-            // apt-generated IDs have the high byte nonzero; clamp to the range under that.
-            int newValue = result + 1;
-            if (newValue > 0x00FFFFFF) newValue = 1; // Roll over to 1, not 0.
-            if (sNextGeneratedId.compareAndSet(result, newValue)) {
-                return result;
-            }
-        }
     }
 }

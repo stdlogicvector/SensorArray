@@ -17,4 +17,16 @@
     <color name="darkred">#D73732</color>
     <color name="lightred">#E68232</color>
 
+    <array name="graph_colors_light">
+        <item>@color/lightgreen</item>
+        <item>@color/lightblue</item>
+        <item>@color/lightred</item>
+    </array>
+
+    <array name="graph_colors_dark">
+        <item>@color/darkgreen</item>
+        <item>@color/darkblue</item>
+        <item>@color/darkred</item>
+    </array>
+
 </resources>
