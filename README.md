@@ -14,4 +14,4 @@ Navigation Drawer with a list of Devices and Sensors
 
 Sensor details
 
-![Sensor View](https://raw.github.com/konstantinwerner/SensorArray/master/screenshots/Screenshot_2014-12-11-00-37-54.png)
+![Sensor View](https://raw.github.com/konstantinwerner/SensorArray/master/screenshots/Screenshot_2014-12-17-05-49-17.png)

@@ -110,7 +110,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Angular Rate Vector",
-                                MeasurementType.GENERIC,
+                                MeasurementType.ANGULAR_SPEED,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -119,7 +119,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Drift Vector",
-                                MeasurementType.GENERIC,
+                                MeasurementType.ANGULAR_SPEED,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -144,7 +144,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Magnetic Flux Vector",
-                                MeasurementType.GENERIC,
+                                MeasurementType.FLUX,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -153,7 +153,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Drift Vector",
-                                MeasurementType.GENERIC,
+                                MeasurementType.FLUX,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -178,7 +178,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Acceleration Vector",
-                                MeasurementType.GENERIC,
+                                MeasurementType.ACCELERATION,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -202,7 +202,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Magnetic Flux Vector",
-                                MeasurementType.GENERIC,
+                                MeasurementType.FLUX,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -225,7 +225,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Angular Rate Vector",
-                                MeasurementType.GENERIC,
+                                MeasurementType.ANGULAR_SPEED,
                                 3,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -248,7 +248,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Illuminance",
-                                MeasurementType.GENERIC,
+                                MeasurementType.BRIGHTNESS,
                                 1,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -270,7 +270,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Ambient Temperature",
-                                MeasurementType.GENERIC,
+                                MeasurementType.TEMPERATURE,
                                 1,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -292,7 +292,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Proximity",
-                                MeasurementType.GENERIC,
+                                MeasurementType.DISTANCE,
                                 1,
                                 sensor.getMinDelay(),
                                 ranges,
@@ -316,7 +316,7 @@ public class InternalSensor
 
                 measurements.add(new Measurement(
                                 "Atmospheric Pressure",
-                                MeasurementType.GENERIC,
+                                MeasurementType.PRESSURE,
                                 1,
                                 sensor.getMinDelay(),
                                 ranges,

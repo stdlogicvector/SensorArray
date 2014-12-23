@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class BTDevice {
     private static final String TAG = "BTDevice";
-    private static final boolean DBG = false;
+    private static final boolean DBG = true;
 
     // Standard Serial Port UUID
     private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
@@ -316,7 +316,12 @@ public class BTDevice {
 
             while (connected) {
                 try {
-                    //TODO: Check if socket is still connected
+                    if (!bluetoothSocket.isConnected()) {
+                        if (DBG) Log.d(TAG, "ConnectedThread run() Socket disconnected");
+                        connectionLost();
+                        break;
+                    }
+
                     int bytes = inputStream.available();
 
                     if (bytes > 0) {
@@ -357,6 +362,8 @@ public class BTDevice {
 
             } catch (IOException e) {
                 if (DBG) Log.d(TAG, "ConnectedThread write() outStream write() failed", e);
+                connected = false;
+                connectionLost();
             }
         }
 

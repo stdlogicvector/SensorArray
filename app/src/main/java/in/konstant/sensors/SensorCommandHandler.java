@@ -216,18 +216,18 @@ public class SensorCommandHandler
         if (result[0].equals("" + CMD.GET_SENSOR_MEAS)) {
 
             Unit unit = new Unit(
-                    result[6],
                     result[7],
-                    Prefix.fromInteger(result[8].charAt(0) - '0'),
-                    Subunit.fromString(result[9]));
+                    result[8],
+                    Prefix.fromInteger(result[9].charAt(0) - '0'),
+                    Subunit.fromString(result[10]));
 
             ArrayList<Range> ranges = new ArrayList<Range>();
 
-            for (int r = 0; r < Integer.parseInt(result[10]); ++r) {
+            for (int r = 0; r < Integer.parseInt(result[11]); ++r) {
                 Range range = new Range(
-                                  ASCII85.decodeToFloat(result[11 + 3*r]),
                                   ASCII85.decodeToFloat(result[12 + 3*r]),
-                                  (int)(result[13 + 3*r].charAt(0)) - '0'
+                                  ASCII85.decodeToFloat(result[13 + 3*r]),
+                                  (int)(result[14 + 3*r].charAt(0)) - '0'
                 );
 
                 ranges.add(range);
@@ -235,9 +235,9 @@ public class SensorCommandHandler
 
             return new Measurement(
                     result[3],
-                    MeasurementType.GENERIC,
-                    result[4].charAt(0) - '0',
-                    ASCII85.decodeToInt(result[5]),
+                    MeasurementType.fromInteger(result[4].charAt(0) - '0'),
+                    result[5].charAt(0) - '0',
+                    ASCII85.decodeToInt(result[6]),
                     ranges.toArray(new Range[ranges.size()]),
                     unit
                     );

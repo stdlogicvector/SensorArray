@@ -146,10 +146,10 @@ public class MeasurementFragment
                             measurement.getUnit().getSIUnit(false);
 
             String range = getResources().getString(R.string.MeasurementFragmentRange) +
-                           measurement.getCurrentRange().getMinFormatted() +
+                           String.format("%.1f", measurement.getCurrentRange().getMin()) +
                            measurement.getUnit().toString() +
                            " - " +
-                           measurement.getCurrentRange().getMaxFormatted() +
+                           String.format("%.1f", measurement.getCurrentRange().getMax()) +
                            measurement.getUnit().toString();
 
             ((TextView) rootView.findViewById(R.id.tvMeasurementName)).setText(name);
@@ -200,7 +200,7 @@ public class MeasurementFragment
         valuePlot.getDomainLabelWidget().pack();
 
         valuePlot.setRangeLabel(measurement.getUnit().getName() + " [" + measurement.getUnit().toString() + "]");
-        valuePlot.setRangeValueFormat(new DecimalFormat("#"));
+        valuePlot.setRangeValueFormat(new DecimalFormat("0.0"));
         valuePlot.getRangeLabelWidget().pack();
 
         valuePlot.getGraphWidget().getBackgroundPaint().setColor(Color.TRANSPARENT);
@@ -247,7 +247,7 @@ public class MeasurementFragment
 
         for (SimpleXYSeries series:valueSeries) {
             if (n < value.length) {
-                this.value.append("" + value[n] + " ");
+                this.value.append(String.format("%." + measurement.getCurrentRange().getDigits() + "f", value[n]) + measurement.getUnit().toString() + " ");
                 valueSeries.get(n).addLast(null, value[n]);
             }
             n++;
